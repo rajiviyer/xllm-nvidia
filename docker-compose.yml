@@ -1,0 +1,35 @@
+services:
+  frontend:
+    container_name: xllm-nvidia-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3011:3011"
+    environment:
+      - NODE_ENV=production
+      - PORT=3011
+    expose:
+      - 3011
+    depends_on:
+      - backend
+    networks:
+      - xllm-nvidia-network
+
+  backend:
+    container_name: xllm-nvidia-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8911:8911"
+    expose:
+      - 8911
+    networks:
+      - xllm-nvidia-network
+
+networks:
+  xllm-nvidia-network:
+    name: xllm-nvidia-network

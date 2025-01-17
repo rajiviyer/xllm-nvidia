@@ -1,0 +1,17 @@
+export const queries = [
+'AWS Google cloud',
+'financial statements 2024',
+'financial reports 2024',
+'growth projections data',
+'growth projections tables',
+'growth projections picture',
+'growth projections image',
+'sales projections',
+'sales projections gaming',
+'sales projection games',
+'investor',
+'public conference !confer !publication',
+'conference public~conference call',
+'public~conference conference~call',
+'public~conference conference~calls'
+];

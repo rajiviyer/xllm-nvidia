@@ -1,0 +1,161 @@
+body {
+  /* --background-color: #18181b; */
+  --text-color: #a1a1aa;
+  --card-background-color: #d4d4d8;
+  --card-border-color: rgba(255, 255, 255, 0.1);
+  --card-box-shadow-1: rgba(0, 0, 0, 0.05);
+  --card-box-shadow-1-y: 3px;
+  --card-box-shadow-1-blur: 6px;
+  --card-box-shadow-2: rgba(0, 0, 0, 0.8);
+  --card-box-shadow-2-y: 8px;
+  --card-box-shadow-2-blur: 15px;
+  --card-label-color: #ffffff;
+  --card-icon-color: #d4d4d8;
+  --card-icon-background-color: rgba(255, 255, 255, 0.08);
+  --card-icon-border-color: rgba(255, 255, 255, 0.12);
+  --card-shine-opacity: 0.1;
+  --card-shine-gradient: conic-gradient(
+    from 205deg at 50% 50%,
+    rgba(16, 185, 129, 0) 0deg,
+    #10b981 25deg,
+    rgba(52, 211, 153, 0.18) 295deg,
+    rgba(16, 185, 129, 0) 360deg
+  );
+  --card-line-color: #2a2b2c;
+  --card-tile-color: rgba(16, 185, 129, 0.05);
+  --card-hover-border-color: rgba(255, 255, 255, 0.2);
+  --card-hover-box-shadow-1: rgba(0, 0, 0, 0.04);
+  --card-hover-box-shadow-1-y: 5px;
+  --card-hover-box-shadow-1-blur: 10px;
+  --card-hover-box-shadow-2: rgba(0, 0, 0, 0.3);
+  --card-hover-box-shadow-2-y: 15px;
+  --card-hover-box-shadow-2-blur: 25px;
+  --card-hover-icon-color: #34d399;
+  --card-hover-icon-background-color: rgba(52, 211, 153, 0.1);
+  --card-hover-icon-border-color: rgba(52, 211, 153, 0.2);
+  --blur-opacity: 0.01;
+}
+
+/* Basic styling for the card */
+
+.card {
+  @apply bg-[var(--card-background-color)] p-[56px_16px_16px_16px] rounded-[15px];
+  box-shadow: 0px var(--card-box-shadow-1-y) var(--card-box-shadow-1-blur)
+      var(--card-box-shadow-1),
+    0px var(--card-box-shadow-2-y) var(--card-box-shadow-2-blur)
+      var(--card-box-shadow-2),
+    0 0 0 1px var(--card-border-color);
+  width: 280px; /* Fixed width */
+  height: 300px; /* Fixed height */
+  display: inline-block;
+  vertical-align: top;
+  position: relative; /* Required for tooltip positioning */
+}
+
+.category {
+  font-size: 14px;
+  text-transform: uppercase;
+  opacity: 0.8;
+  margin-bottom: 10px;
+  text-align: center;
+  font-weight: bold;
+  color: #ff9933;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); /* Text shadow for depth */
+}
+
+/* cal_polygreen: "#2C5530", */
+
+.title {
+  text-align: center;
+  color: #668f80;
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2), 2px 2px 4px rgba(0, 0, 0, 0.15),
+    3px 3px 6px rgba(0, 0, 0, 0.1), 4px 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.tag {
+  background-color: rgb(15, 23, 42);
+  border-radius: 15px;
+  padding: 5px 10px;
+  font-size: 10px;
+  color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8),
+    inset 0 0 5px rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(5px);
+  border: 1px solid transparent;
+  background-clip: padding-box; /* Ensures the gradient is not overlapped by padding */
+  position: relative;
+  overflow: hidden;
+}
+
+.tag:before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 15px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  z-index: -1;
+}
+
+/* .tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+}
+
+.tag {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+  padding: 5px 10px;
+  font-size: 12px;
+  color: white;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+} */
+
+/* Tooltip styling */
+.tooltip {
+  position: absolute;
+  top: 50%; /* Position below the card */
+  /* left: 50%; */
+  transform: translateX(-3%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  white-space: wrap;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  font-size: x-small;
+}
+
+.tooltip::after {
+  content: "";
+  position: absolute;
+  top: -5px; /* Position arrow above the tooltip */
+  /* left: 50%; */
+  transform: translateX(-3%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent rgba(0, 0, 0, 0.8) transparent;
+}
