@@ -201,7 +201,7 @@ def get_docs(form_params: frontendParamsType) -> dict[List[dict], List[dict]]:
         if n_ID < nresults:  
             agents = exllm.get_value(ID, ID_to_agents)
             if len(agents) > 0:
-                print("    %8s     %s" %(ID, agents))     
+                print("    %8s     Agents: %s" %(ID, agents))     
         n_ID += 1    
     
     q_embeddings = dict(sorted(q_embeddings.items(),
@@ -218,6 +218,7 @@ def get_docs(form_params: frontendParamsType) -> dict[List[dict], List[dict]]:
             docs.append({
                 "id": ID,
                 # "agent":list(ID_to_agents[ID].keys())[0] if ID in ID_to_agents else "",
+                "agents": ", ".join(list(exllm.get_value(ID, ID_to_agents))),
                 # "category":result_dict["category_text"],
                 # "title":result_dict["title_text"],
                 # "tags": ", ".join([tag.strip() for tag in result_dict['tags_list_text']]),

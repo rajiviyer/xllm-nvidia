@@ -28,17 +28,17 @@ const ParamForm: React.FC<ResultDocProps> = ({ setResult }) => {
     beta: 1.0,
     queryText: queries[0],
     distill: true,
-    maxTokenCount: 1000,
-    nresults: 20
+    maxTokenCount: 2,
+    nresults: 15
   };
 
   const minFormData = {
     useStem: true,
-    beta: 1.0,
+    beta: 0.5,
     queryText: queries[0],
     distill: true,
-    maxTokenCount: 100,
-    nresults: 5
+    maxTokenCount: 2,
+    nresults: 4
   };
 
   const [formData, setFormData] = useState(defaultFormData);
@@ -192,9 +192,9 @@ const ParamForm: React.FC<ResultDocProps> = ({ setResult }) => {
                 {...register("beta", { required: true })}
                 value={formData.beta}
                 onChange={(event) => handleInputChange(event)}
-                min="1"
-                max="7"
-                step="1"
+                min="0.5"
+                max="1.0"
+                step="0.1"
                 className="bg-bondingai_primary border border-bondingai_input_border text-slate-300 text-sm rounded-md w-full p-1"
               />
             </div>
@@ -207,8 +207,8 @@ const ParamForm: React.FC<ResultDocProps> = ({ setResult }) => {
                 {...register("nresults", { required: true })}
                 value={formData.nresults}
                 onChange={(event) => handleInputChange(event)}
-                min="1"
-                max="30"
+                min="4"
+                max="15"
                 step="1"
                 className="bg-bondingai_primary border border-bondingai_input_border text-slate-300 text-sm rounded-md w-full p-1"
               />
@@ -223,8 +223,8 @@ const ParamForm: React.FC<ResultDocProps> = ({ setResult }) => {
                   type="number"
                   {...register("maxTokenCount", { required: true })}
                   value={formData.maxTokenCount}
-                  min="5"
-                  max="2000"
+                  min="2"
+                  max="5"
                   step="1"
                   onChange={(event) => handleInputChange(event)}
                   className="bg-bondingai_primary border border-bondingai_input_border text-slate-300 text-sm rounded-md w-full p-1"

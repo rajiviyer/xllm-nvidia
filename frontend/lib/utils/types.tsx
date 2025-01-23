@@ -40,6 +40,7 @@ interface DocContent {
 }
 export interface Doc {
   id: string;
+  agents: string;
   content: DocContent;
   rank: number;
   size: number;

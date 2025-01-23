@@ -10,7 +10,7 @@ const Card: React.FC<CardProps> = ({ doc, onClick }) => {
   console.log("doc", doc);
   
   // const { category, title, tags, description } = doc;
-  const { id, content, rank, size, hash_id } = doc;
+  const { id, agents, content, rank, size, hash_id } = doc;
   console.log(`content: ${content}`);
   const { title_text, description_text } = content;
   console.log(`title_text: ${title_text}, description_text: ${description_text}`);
@@ -26,10 +26,25 @@ const Card: React.FC<CardProps> = ({ doc, onClick }) => {
       onMouseLeave={() => setIsTooltipVisible(false)}
       onClick={onClick} // Clicking the card opens the modal
     >
-      {title_text && ( <div className="title">{title_text}</div> ) }
-      {rank && ( <div className="category">{rank}</div> ) }
-      { size && ( <div className="category">{size}</div> ) }
-      {/* { hash_id && ( <div className="category">{hash_id}</div> ) } */}
+      {/* {title_text && ( <div className="title">{title_text}</div> ) } */}
+      {rank && ( <div className="rank"><span className="text-mahogany font-bold">Rank: </span>{rank}</div> ) }
+      { size && ( <div className="size"><span className="text-rosewood font-bold">Size: </span>{size}</div> ) }
+      { 
+        agents && ( 
+          <div className="agents"><span className="text-midnightgreen font-bold">Agent(s): </span>
+            <div className="agents">
+              {agents.split(",").slice(0, 5).map(
+                (agent) =>
+                  agent.trim() !== "" && (
+                    <span key={agent} className="agent">
+                      {agent}
+                    </span>
+                  )
+              )}
+            </div>
+          </div> 
+        ) 
+      }      
       {isTooltipVisible && <div className="tooltip">{description_text}</div>}
     </div>
   );
