@@ -25,7 +25,7 @@ function Navbar() {
           />
         </div>
         <div className="flex pr-6 md:order-2 space-x-5 md:space-x-0 rtl:space-x-reverse">
-          <Link href="https://mltechniques.com/2024/09/22/no-code-llm-fine-tuning-and-debugging-in-real-time-case-study/" className="py-1">
+          <Link href="https://mltechniques.com/2025/01/10/blueprint-next-gen-enterprise-rag-llm-2-0-nvidia-pdfs-use-case/" className="py-1">
             <button
               type="button"
               className="text-bondingai_secondary bg-bondingai_secondary/[0.25] hover:bg-[#facc15] hover:text-black focus:ring-4 focus:outline-none focus:ring-bondingai_secondary/[0.25] font-medium rounded-lg text-sm px-4 py-1 text-center"

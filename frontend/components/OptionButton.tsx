@@ -11,7 +11,7 @@ const OptionButton: React.FC<OptionButtonProps> = ({
   const handleButtonClick = (
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
-    // console.log(`Current option: ${event.currentTarget.value}`);
+    console.log(`Current option: ${event.currentTarget.value}`);
 
     if (["Seeded", "Yes"].includes(event.currentTarget.value)) {
       handleOptionButtonClick(true);

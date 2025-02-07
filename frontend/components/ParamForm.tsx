@@ -15,8 +15,8 @@ const ParamForm: React.FC<ResultDocProps> = ({ setResult }) => {
   const { register, handleSubmit } = useForm<FormType>();
   const [byPassList, setByPassList] = useState(false);
   const [seedQuery, setSeedQuery] = useState(true);
-  const [useStem, setUseStem] = useState(true);
-  const [distill, setDistill] = useState(true);
+  const [useStem, setUseStem] = useState(false);
+  const [distill, setDistill] = useState(false);
   const [isDebugTooltipVisible, setIsDebugTooltipVisible] = useState(false);
 
   // State to track the height of the textarea
@@ -36,9 +36,9 @@ const ParamForm: React.FC<ResultDocProps> = ({ setResult }) => {
     useStem: true,
     beta: 0.5,
     queryText: queries[0],
-    distill: true,
+    distill: false,
     maxTokenCount: 2,
-    nresults: 4
+    nresults: 15
   };
 
   const [formData, setFormData] = useState(defaultFormData);
@@ -58,7 +58,7 @@ const ParamForm: React.FC<ResultDocProps> = ({ setResult }) => {
   };
 
   const handleOptionButtonClickUseStem = (option: boolean) => {
-    // console.log("custom pmi", option);
+    console.log("use_stem", option);
     setUseStem(option);
   };
 
@@ -119,7 +119,9 @@ const ParamForm: React.FC<ResultDocProps> = ({ setResult }) => {
   // const retrieveDocs = async (data: Object) => {
   const retrieveDocs = async () => {
     const data = {
-      ...formData
+      ...formData,
+      useStem: useStem,
+      distill: distill
     };
 
     if (data) {

@@ -114,6 +114,7 @@ def get_docs(form_params: frontendParamsType) -> dict[List[dict], List[dict]]:
     query.sort()
     print("Cleaned:", query)
     print("------------------")
+    print("Alttokens", altTokens)
         
     q_embeddings = {} 
     q_dictionary = {} 
@@ -136,7 +137,10 @@ def get_docs(form_params: frontendParamsType) -> dict[List[dict], List[dict]]:
                 if word in dictionary:
                     q_dictionary[word] = dictionary[word]
                     embedding = exllm.get_value(word, embeddings)
-                    exllm.add_embedding(q_embeddings, word, embedding) 
+                    exllm.add_embedding(q_embeddings, word, embedding)
+    
+    print("qembeddings length", len(q_embeddings))
+    print("q_dictionary length", len(q_dictionary))                       
 
     # deal with prompt multitokens, if there are any  [need to add multitoken stemming]
     for word in query:
@@ -144,6 +148,10 @@ def get_docs(form_params: frontendParamsType) -> dict[List[dict], List[dict]]:
             q_dictionary[word] = dictionary[word]
             embedding = exllm.get_value(word, embeddings)
             exllm.add_embedding(q_embeddings, word, embedding)
+            
+    print("qembeddings length", len(q_embeddings))
+    print("q_dictionary length", len(q_dictionary))            
+            
 
     # --- Scoring and selecting what to show in prompt results ---                
     if form_params['distill']:
@@ -162,6 +170,7 @@ def get_docs(form_params: frontendParamsType) -> dict[List[dict], List[dict]]:
         if gword in hash_ID and word not in neg_query:
             for ID in hash_ID[gword]:
                 exllm.update_nestedHash(ID_hash, ID, gword, 1)     
+    print("ID_hash length", len(ID_hash))        
     
     ID_score = {}
     for ID in ID_hash:
@@ -181,8 +190,13 @@ def get_docs(form_params: frontendParamsType) -> dict[List[dict], List[dict]]:
         ID_score[ID] = [score[0], score[1], gscore[0], gscore[1]]
         
     ID_score_ranked = rank_ID(ID_score) 
-    nresults = form_params['nresults']     
+    nresults = form_params['nresults']
+    print("ID_score length", len(ID_score))
+    
+    print("Most relevant chunks with multitokens, doc_ID, pn, rank, size:\n")
+    
     n_ID = 0
+    print("\n          ID wRank   size PDF   pn ID_Tokens")
     for ID in ID_score_ranked:
         if n_ID < nresults:  
             # content of text entity ID not shown, stored in ID_to_content[ID]
@@ -196,25 +210,34 @@ def get_docs(form_params: frontendParamsType) -> dict[List[dict], List[dict]]:
                     %(ID, rankx, size, doc_ID, pn, ID_hash[ID]))     
         n_ID += 1
         
+    print("Most relevant chunks with agents:\n")
+    print("\n          ID     ID_agents")
     n_ID = 0            
     for ID in ID_score_ranked:
         if n_ID < nresults:  
             agents = exllm.get_value(ID, ID_to_agents)
             if len(agents) > 0:
-                print("    %8s     Agents: %s" %(ID, agents))     
+                print("    %8s     %s" %(ID, agents))     
         n_ID += 1    
     
+    print("\nToken count (via dictionary):\n")
+    for key in q_dictionary:
+        print("    %4d     %s" %(q_dictionary[key], key))
+    
+    print("\nTop related tokens (via embeddings):\n")
     q_embeddings = dict(sorted(q_embeddings.items(),
                                key=lambda item: item[1],
                                reverse=True))    
     
     docs = []
+    print("\nFull content sorted by relevancy\n")
     n_ID = 0
     for ID in ID_score_ranked:
         content = ID_to_content[ID]
         rankx = ID_score_ranked[ID]
         size = ID_size[ID]
-        if n_ID < nresults and size < 60000:  
+        if n_ID < nresults and size < 60000:
+            print("%8s %3d %5d %s %s\n" %(ID, rankx, size, ID_hash[ID], content))
             docs.append({
                 "id": ID,
                 # "agent":list(ID_to_agents[ID].keys())[0] if ID in ID_to_agents else "",

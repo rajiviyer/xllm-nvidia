@@ -72,11 +72,12 @@ function Output({ result }: { result: DataProps }) {
                 <span className="text-sunset font-bold">Size: </span>
                 {selectedDoc.size}
               </p>
-              {/* <p className="modal-content">
-                <span className="text-sunset font-bold">Hash Id: </span>
-                {selectedDoc.hash_id}
-              </p> */}
-
+              {selectedDoc.content?.title_text && (
+                <p className="modal-content">
+                  <span className="text-sunset font-bold">Title: </span>
+                  {selectedDoc.content?.title_text}
+                </p>
+              )}
               <p className="modal-content">
                 <span className="text-sunset font-bold">Content: </span>
                 {/* Display partial or full description based on state */}

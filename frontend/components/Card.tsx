@@ -26,17 +26,20 @@ const Card: React.FC<CardProps> = ({ doc, onClick }) => {
       onMouseLeave={() => setIsTooltipVisible(false)}
       onClick={onClick} // Clicking the card opens the modal
     >
-      {/* {title_text && ( <div className="title">{title_text}</div> ) } */}
+      {title_text && ( <div className="title"><span className="text-viridian font-bold">TITLE: </span>{title_text}</div> ) }
       {rank && ( <div className="rank"><span className="text-mahogany font-bold">Rank: </span>{rank}</div> ) }
       { size && ( <div className="size"><span className="text-rosewood font-bold">Size: </span>{size}</div> ) }
       { 
-        agents && ( 
-          <div className="agents"><span className="text-midnightgreen font-bold">Agent(s): </span>
-            <div className="agents">
+        agents && (
+          <div>
+            <div className="text-midnightgreen font-bold text-center">
+              Tag(s): 
+            </div>
+            <div className="tags">
               {agents.split(",").slice(0, 5).map(
                 (agent) =>
                   agent.trim() !== "" && (
-                    <span key={agent} className="agent">
+                    <span key={agent} className="tag">
                       {agent}
                     </span>
                   )
@@ -45,7 +48,7 @@ const Card: React.FC<CardProps> = ({ doc, onClick }) => {
           </div> 
         ) 
       }      
-      {isTooltipVisible && <div className="tooltip">{description_text}</div>}
+      {isTooltipVisible && <div className="tooltip">{description_text.substring(0, 500) + "..."}</div>}
     </div>
   );
 };
