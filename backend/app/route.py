@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import Annotated
 
 from .docs_processing import get_docs
+from .llm_processing import parse_docs
 
 app = FastAPI()
 
@@ -29,6 +30,14 @@ def home():
 
 @app.post("/api/docs")
 def get_docs(docs: Annotated[dict, Depends(get_docs)]):
-    print("Successfully retrieved docs")
+    if docs:
+        print("Successfully retrieved docs")
+        raw_content = docs["complete_content"]
+        processed_content = parse_docs(raw_content)
+        docs["complete_content"] = processed_content
     return docs
 
+@app.post("/api/parse_docs")
+def parse_docs(parsed_text: Annotated[str, Depends(parse_docs)]):
+    print("Successfully parsed docs")
+    return parsed_text

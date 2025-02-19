@@ -59,6 +59,7 @@ export interface Doc {
 export interface DataProps {
   // embeddings: Embeddings[];
   docs: Doc[];
+  complete_content: string;
 }
 export interface ResultDocProps {
   setResult: (result: DataProps) => void;

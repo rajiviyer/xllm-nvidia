@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Doc, DataProps } from "@/lib/utils/types";
 function HomePage() {
   // const [result, setResult] = useState<DataProps>({ embeddings: [], docs: [] });
-  const [result, setResult] = useState<DataProps>({ docs: [] });
+  const [result, setResult] = useState<DataProps>({ docs: [], complete_content: "" });
   return (
     <div className="flex flex-col lg:flex-row">
       {/* <div>Test</div> */}

@@ -2,9 +2,11 @@ import Card from "./Card";
 // import { Doc, Embeddings, DataProps } from "@/lib/utils/types";
 import { Doc, DataProps } from "@/lib/utils/types";
 import { useState } from "react";
+import ReactMarkdown from "react-markdown";
 import "./Output.css";
 function Output({ result }: { result: DataProps }) {
   const docs: Doc[] = result["docs"];
+  const processed_content: string = result["complete_content"];
 
   const nResult: number = docs.length;
   // const embeddingsData: Embeddings[] = result["embeddings"];
@@ -47,7 +49,15 @@ function Output({ result }: { result: DataProps }) {
     <div>
       {nResult > 0 && (
         <div>
-          <h2 className="text-slate-100 mb-3 text-center">Docs</h2>
+          {processed_content && (
+            <div>
+              <h2 className="text-slate-100 mb-3 text-center">Processed Content</h2>
+              <div className="prose max-w-none text-slate-400 text-sm">
+                <ReactMarkdown>{processed_content}</ReactMarkdown>
+              </div>
+            </div>
+          )}          
+          <h2 className="text-slate-100 mb-3 text-center mt-6">Docs</h2>
           <p className="text-slate-100 mb-6 text-center text-xs italic mt-4">
             * Click on a card to see more details
           </p>

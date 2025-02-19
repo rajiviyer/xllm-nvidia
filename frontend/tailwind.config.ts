@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import typography from "@tailwindcss/typography"; // Import the plugin
 
 const config: Config = {
   content: [
@@ -44,7 +45,7 @@ const config: Config = {
         bondingai_card: "#19213600",
       },
     },
-    plugins: [],
+    plugins: [typography],
   },
 };
 export default config;

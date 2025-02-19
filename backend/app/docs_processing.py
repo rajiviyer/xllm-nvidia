@@ -4,6 +4,7 @@ from .utils.params import (get_bin, ignore, sample_queries,
                      sectionLabels, backendTables)
 
 from .utils import functions as exllm
+from .llm_processing import parse_docs
 
 from nltk.stem import PorterStemmer
 from collections import defaultdict
@@ -90,7 +91,8 @@ def get_docs(form_params: frontendParamsType) -> dict[List[dict], List[dict]]:
     new_query = []
     for k in range(len(query)):
         token = query[k].lower()
-        if token[0] == '!':
+        print(f"Token: {token}")
+        if token and token[0] == '!':
             token = token[1:len(token)]
             neg_query.append(token) 
             
@@ -258,5 +260,10 @@ def get_docs(form_params: frontendParamsType) -> dict[List[dict], List[dict]]:
                 "size": size,
                 "hash_id": ID_hash[ID]
             })
-        n_ID += 1    
-    return {"docs": docs}
+        n_ID += 1
+    complete_raw_content = " ".join([doc["content"]["description_text"] for doc in docs])
+    question = form_params['queryText']
+    processed_content = parse_docs(complete_raw_content, question)
+    print(f"Processed content: {processed_content}")
+    complete_content = processed_content
+    return {"docs": docs, "complete_content": complete_content}
