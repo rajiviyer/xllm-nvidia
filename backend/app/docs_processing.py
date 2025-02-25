@@ -227,9 +227,25 @@ def get_docs(form_params: frontendParamsType) -> dict[List[dict], List[dict]]:
         print("    %4d     %s" %(q_dictionary[key], key))
     
     print("\nTop related tokens (via embeddings):\n")
+    local_hash_emb = {}  # used to not show same token 2x (linked to 2 different words) 
     q_embeddings = dict(sorted(q_embeddings.items(),
                                key=lambda item: item[1],
-                               reverse=True))    
+                               reverse=True))
+    
+    doc_embeddings = []
+    # Logic for retrieving embeddings
+    
+    for key in q_embeddings:
+        word = key[0]
+        token = key[1]
+        pmi = q_embeddings[key]
+        
+        if token not in local_hash_emb:        
+            doc_embeddings.append({
+                "word": word,
+                "token": token,
+                "pmi": pmi
+            })  
     
     docs = []
     print("\nFull content sorted by relevancy\n")
@@ -266,4 +282,4 @@ def get_docs(form_params: frontendParamsType) -> dict[List[dict], List[dict]]:
     processed_content = parse_docs(complete_raw_content, question)
     print(f"Processed content: {processed_content}")
     complete_content = processed_content
-    return {"docs": docs, "complete_content": complete_content}
+    return {"embeddings": doc_embeddings, "docs": docs, "complete_content": complete_content}

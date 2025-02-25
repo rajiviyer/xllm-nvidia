@@ -1,6 +1,6 @@
 import Card from "./Card";
 // import { Doc, Embeddings, DataProps } from "@/lib/utils/types";
-import { Doc, DataProps } from "@/lib/utils/types";
+import { Doc, Embeddings, DataProps } from "@/lib/utils/types";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import "./Output.css";
@@ -9,18 +9,18 @@ function Output({ result }: { result: DataProps }) {
   const processed_content: string = result["complete_content"];
 
   const nResult: number = docs.length;
-  // const embeddingsData: Embeddings[] = result["embeddings"];
-  // const nEmbeddings: number = embeddingsData.length;
-  // console.log("nEmbeddings", nEmbeddings);
+  const embeddingsData: Embeddings[] = result["embeddings"];
+  const nEmbeddings: number = embeddingsData.length;
+  console.log("nEmbeddings", nEmbeddings);
   console.log("nResult", nResult);
 
-  // console.log("embeddingsData", embeddingsData);
+  console.log("embeddingsData", embeddingsData);
 
   const [selectedDoc, setSelectedDoc] = useState<Doc | null>(null);
   const [isContentExpanded, setIsContentExpanded] = useState(false);
 
   // Embeddings toggle state
-  // const [isEmbeddingsExpanded, setIsEmbeddingsExpanded] = useState(false);
+  const [isEmbeddingsExpanded, setIsEmbeddingsExpanded] = useState(false);
 
   const openModal = (doc: Doc) => {
     console.log("clicked");
@@ -42,9 +42,10 @@ function Output({ result }: { result: DataProps }) {
   };
 
   // Toggle embeddings container
-  // const toggleEmbeddings = () => {
-  //   setIsEmbeddingsExpanded(!isEmbeddingsExpanded);
-  // };
+  const toggleEmbeddings = () => {
+    setIsEmbeddingsExpanded(!isEmbeddingsExpanded);
+  };
+
   return (
     <div>
       {nResult > 0 && (
@@ -58,6 +59,35 @@ function Output({ result }: { result: DataProps }) {
             </div>
           )}          
           <h2 className="text-slate-100 mb-3 text-center mt-6">Docs</h2>
+          {/* Button to toggle embeddings container */}
+          {nEmbeddings > 0 && (
+            <button onClick={toggleEmbeddings} className="embeddings-btn">
+              {isEmbeddingsExpanded ? "Hide Embeddings" : "Show Embeddings"}
+            </button>
+          )}
+          {/* Expandable container for embeddings data */}
+          {nEmbeddings > 0 && isEmbeddingsExpanded && (
+            <div className="embeddings-container">
+              <table className="embeddings-table">
+                <thead>
+                  <tr>
+                    <th>PMI</th>
+                    <th>Token [from embeddings]</th>
+                    <th>Word [from prompt]</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {embeddingsData.map((embedding, index) => (
+                    <tr key={index}>
+                      <td>{embedding.pmi.toFixed(2)}</td>
+                      <td>{embedding.token}</td>
+                      <td>{embedding.word}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}                
           <p className="text-slate-100 mb-6 text-center text-xs italic mt-4">
             * Click on a card to see more details
           </p>

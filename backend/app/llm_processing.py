@@ -19,6 +19,7 @@ def parse_docs(text, question) -> str:
         SystemMessage(content="""
                         You are an AI assistant that answers questions based on the given text. 
                         The answers are provided in Markdown format with a bullet point list wherever applicable.
+                        Keep the answers minimally verbose.
                       """),
         HumanMessage(content=f"Here is the text: {text}\n\nNow, answer this question: {question}"),
     ]

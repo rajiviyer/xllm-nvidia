@@ -47,17 +47,17 @@ export interface Doc {
   hash_id: string;
 }
 
-// export interface Embeddings {
-//   n: number;
-//   pmi: number;
-//   f: string;
-//   token: string;
-//   word: string;
-// }
+export interface Embeddings {
+  // n: number;
+  pmi: number;
+  // f: string;
+  token: string;
+  word: string;
+}
 
 // Define the interface for the function argument
 export interface DataProps {
-  // embeddings: Embeddings[];
+  embeddings: Embeddings[];
   docs: Doc[];
   complete_content: string;
 }

@@ -13,7 +13,7 @@ import Image from "next/image";
 
 const ParamForm: React.FC<ResultDocProps> = ({ setResult }) => {
   const { register, handleSubmit } = useForm<FormType>();
-  const [byPassList, setByPassList] = useState(false);
+  // const [byPassList, setByPassList] = useState(false);
   const [seedQuery, setSeedQuery] = useState(true);
   const [useStem, setUseStem] = useState(false);
   const [distill, setDistill] = useState(false);
