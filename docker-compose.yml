@@ -30,6 +30,24 @@ services:
     networks:
       - xllm-nvidia-network
 
+  # pgdatabase:
+  #   container_name: xllm-db
+  #   image: postgres:16.2-bookworm
+  #   ports:
+  #     - 5411:5432
+  #   restart: always
+  #   environment:
+  #     - POSTGRES_DB=xllmdb
+  #     - POSTGRES_USER=postgres
+  #     - POSTGRES_PASSWORD=welcome1
+  #     - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+  #     - PGADMIN_DEFAULT_PASSWORD=root
+  #     - POSTGRES_HOST_AUTH_METHOD=trust
+  #   volumes:
+  #     - ./xllmdata:/var/lib/postgresql/data:rw
+  #   networks:
+  #     - xllm-nvidia-network      
+
 networks:
   xllm-nvidia-network:
     name: xllm-nvidia-network

@@ -1,7 +1,9 @@
 fastapi[all]
-uvicorn
+sqlmodel
+psycopg2-binary
 nltk
 requests
 langchain-core
 langchain-openai
 python-dotenv
+numpy

@@ -1,11 +1,19 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Annotated
-
+from .db.db_connector import get_session, create_table
+from contextlib import asynccontextmanager
 from .docs_processing import get_docs
 from .llm_processing import parse_docs
+from .utils.db_load import upload_dictionary_file
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("Creating Tables..")
+    create_table()
+    yield
+
+app = FastAPI(lifespan=lifespan)
 
 # Middleware for CORS
 app.add_middleware(
@@ -41,3 +49,7 @@ def get_docs(docs: Annotated[dict, Depends(get_docs)]):
 def parse_docs(parsed_text: Annotated[str, Depends(parse_docs)]):
     print("Successfully parsed docs")
     return parsed_text
+
+@app.post("/api/dictionary/upload")
+async def upload_dictionary_file(message: str = Depends(upload_dictionary_file)):
+    return {"message": message}
