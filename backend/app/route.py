@@ -5,7 +5,8 @@ from .db.db_connector import get_session, create_table
 from contextlib import asynccontextmanager
 from .docs_processing import get_docs
 from .llm_processing import parse_docs
-from .utils.db_load import upload_dictionary_file
+from .utils.db_load import (upload_dictionary_file, upload_embeddings_file, 
+                            upload_sorted_ngrams_file, upload_chunks_file, upload_chunks_contents_file)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -52,4 +53,20 @@ def parse_docs(parsed_text: Annotated[str, Depends(parse_docs)]):
 
 @app.post("/api/dictionary/upload")
 async def upload_dictionary_file(message: str = Depends(upload_dictionary_file)):
+    return {"message": message}
+
+@app.post("/api/embeddings/upload")
+async def upload_embeddings_file(message: str = Depends(upload_embeddings_file)):
+    return {"message": message}
+
+@app.post("/api/sorted_ngrams/upload")
+async def upload_sorted_ngrams_file(message: str = Depends(upload_sorted_ngrams_file)):
+    return {"message": message}
+
+@app.post("/api/chunks/upload")
+async def upload_chunks_file(message: str = Depends(upload_chunks_file)):
+    return {"message": message}
+
+@app.post("/api/chunks_contents/upload")
+async def upload_chunks_contents_file(message: str = Depends(upload_chunks_contents_file)):
     return {"message": message}

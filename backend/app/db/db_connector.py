@@ -1,6 +1,6 @@
 from sqlmodel import create_engine, Session, SQLModel
 from ..settings import DB_URL
-from ..db_models.xllm_models import XLLMDictionary
+from ..db_models.xllm_models import XLLMDictionary, XLLMEmbeddings
 
 connection_string = DB_URL.replace("postgresql","postgresql+psycopg2")
 # print(f"Connection String: {connection_string}")
