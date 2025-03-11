@@ -277,9 +277,47 @@ def get_docs(form_params: frontendParamsType) -> dict[List[dict], List[dict]]:
                 "hash_id": ID_hash[ID]
             })
         n_ID += 1
+    
+    print(f"Generating User Friendly Result")
     complete_raw_content = " ".join([doc["content"]["description_text"] for doc in docs])
     question = form_params['queryText']
-    processed_content = parse_docs(complete_raw_content, question)
+    # processed_content = parse_docs(complete_raw_content, question)
+    processed_content = "Test LLM Result"
     print(f"Processed content: {processed_content}")
     complete_content = processed_content
     return {"embeddings": doc_embeddings, "docs": docs, "complete_content": complete_content}
+
+def preprocess_query(query):
+    """
+    Cleans the query by removing stopwords and lowercasing words.
+    """
+    stopwords = {"what", "are", "the"}  # Load from PostgreSQL if needed
+    tokens = [word.lower() for word in query.split() if word.lower() not in stopwords]
+    return tokens
+
+def get_docs_from_db(form_params: frontendParamsType) -> dict[List[dict], List[dict]]:
+    """
+    Get docs from db
+
+    Args:
+        form_params (frontendParamsType): User Input Data from Frontend  
+
+    Returns:
+        List[dict]: Dictionary of List of Embeddings & Docs
+    """
+    print("form_params", form_params)
+    use_stem = form_params['useStem']
+    beta = form_params['beta']
+    query_text = form_params['queryText']
+    distill = form_params['distill']
+    max_token_count = form_params['maxTokenCount']
+    nresults = form_params['nresults']
+    print("use_stem", use_stem)
+    print("beta", beta)
+    print("query_text", query_text)
+    print("distill", distill)
+    print("max_token_count", max_token_count)
+    print("nresults", nresults)
+    
+    # Step 1: Preprocess query
+    query_tokens = preprocess_query(query)    

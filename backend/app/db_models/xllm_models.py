@@ -38,3 +38,18 @@ class XLLMChunkDetails(SQLModel, table=True):
     size: int
     agents: Optional[str]
     index: Optional[str]
+    
+class XLLMHashID(SQLModel, table=True):
+    __tablename__ = "xllm_hash_id"
+    key: str = Field(primary_key=True, index=True)  # Unique identifier
+    hashes:  Dict[str, int] = Field(sa_type=JSONB)  # JSONB column for hashes  
+
+class XLLMHashStem(SQLModel, table=True):
+    __tablename__ = "xllm_hash_stem"
+    keyword: str = Field(primary_key=True, index=True)  # Unique identifier
+    stem: str    
+    
+class XLLMHashUnStem(SQLModel, table=True):
+    __tablename__ = "xllm_hash_unstem"
+    stem: str = Field(primary_key=True, index=True)  # Unique identifier
+    keywords: str

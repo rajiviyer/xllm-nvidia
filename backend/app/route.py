@@ -5,8 +5,10 @@ from .db.db_connector import get_session, create_table
 from contextlib import asynccontextmanager
 from .docs_processing import get_docs
 from .llm_processing import parse_docs
-from .utils.db_load import (upload_dictionary_file, upload_embeddings_file, 
-                            upload_sorted_ngrams_file, upload_chunks_file, upload_chunks_contents_file)
+from .utils.db_load import (upload_dictionary_file, upload_embeddings_file, upload_sorted_ngrams_file, 
+                            upload_chunks_file, upload_chunks_contents_file, upload_chunks_agents_file,
+                            upload_chunks_index_file, upload_hash_ids_file, upload_hash_unstem_file,
+                            upload_hash_stem_file)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -69,4 +71,24 @@ async def upload_chunks_file(message: str = Depends(upload_chunks_file)):
 
 @app.post("/api/chunks_contents/upload")
 async def upload_chunks_contents_file(message: str = Depends(upload_chunks_contents_file)):
+    return {"message": message}
+
+@app.post("/api/chunks_agents/upload")
+async def upload_chunks_agents_file(message: str = Depends(upload_chunks_agents_file)):
+    return {"message": message}
+
+@app.post("/api/chunks_index/upload")
+async def upload_chunks_index_file(message: str = Depends(upload_chunks_index_file)):
+    return {"message": message}
+
+@app.post("/api/hash_ids/upload")
+async def upload_hash_ids_file(message: str = Depends(upload_hash_ids_file)):
+    return {"message": message}
+
+@app.post("/api/hash_unstem/upload")
+async def upload_hash_unstem_file(message: str = Depends(upload_hash_unstem_file)):
+    return {"message": message}
+
+@app.post("/api/hash_stem/upload")
+async def upload_hash_stem_file(message: str = Depends(upload_hash_stem_file)):
     return {"message": message}

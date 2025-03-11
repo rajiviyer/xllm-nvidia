@@ -241,3 +241,227 @@ async def upload_chunks_contents_file(file: UploadFile = File(...), session: DBS
     except Exception as e:
         print(f"Exception: {str(e)}")
         return f"Error: Failed to add chunks content into the database"    
+    
+async def upload_chunks_agents_file(file: UploadFile = File(...), session: DBSession = Depends(get_session)):
+    """
+    Uploads agents related to a chunk
+
+    Args:
+        file (UploadFile): The dictionary file to upload.
+        session (Session): The database session.
+
+    Returns:
+        str: A message indicating the success or failure of the upload.
+        
+    Data File Format:
+    B2X0	('Income', 'Tax', 'Cash', 'Products', 'Data', 'Accelerated Computing', 'Data Center', 'Non-GAAP')
+    """
+    try:
+        
+        # Read file as text (entire content)
+        contents = await file.read()        
+        
+        records = []
+        batch_size = 10001  # Process in chunks of 10K rows
+        query = text("SELECT xllm_bulk_update_chunks_agents(:json_data)")
+        for line in contents.decode("latin1").strip().split("\n"):
+            parts = line.split("\t")
+            if len(parts) == 2:
+                chunk_id = parts[0]
+                agents = ", ".join(eval(parts[1]))
+                records.append({"chunk_id": chunk_id, "agents": agents})
+            
+            if len(records) >= batch_size:
+                json_data = json.dumps(records)
+                session.execute(query, {"json_data": json_data})
+                records = []
+
+        if records:
+            print(f"sample record: {records[0]}") 
+            json_data = json.dumps(records)
+            session.execute(query, {"json_data": json_data})
+        
+        session.commit()        
+        
+        return {"message": "Success: File uploaded and chunks agents data inserted into database."}
+    except Exception as e:
+        print(f"Exception: {str(e)}")
+        return f"Error: Failed to add chunks agents into the database"
+    
+async def upload_chunks_index_file(file: UploadFile = File(...), session: DBSession = Depends(get_session)):
+    """
+    Uploads index related to a chunk
+
+    Args:
+        file (UploadFile): The dictionary file to upload.
+        session (Session): The database session.
+
+    Returns:
+        str: A message indicating the success or failure of the upload.
+        
+    Data File Format:
+    B54X0	(0, 7)
+    """
+    try:
+        
+        # Read file as text (entire content)
+        contents = await file.read()        
+        
+        records = []
+        batch_size = 10001  # Process in chunks of 10K rows
+        query = text("SELECT xllm_bulk_update_chunks_index(:json_data)")
+        for line in contents.decode("latin1").strip().split("\n"):
+            parts = line.split("\t")
+            if len(parts) == 2:
+                chunk_id = parts[0]
+                # index = ", ".join(eval(parts[1]))
+                index = parts[1]
+                print(f"index: {index}")
+                records.append({"chunk_id": chunk_id, "index": index})
+            
+            if len(records) >= batch_size:
+                json_data = json.dumps(records)
+                session.execute(query, {"json_data": json_data})
+                records = []
+
+        if records:
+            print(f"sample record: {records[0]}") 
+            json_data = json.dumps(records)
+            session.execute(query, {"json_data": json_data})
+        
+        session.commit()        
+        
+        return {"message": "Success: File uploaded and chunks index data inserted into database."}
+    except Exception as e:
+        print(f"Exception: {str(e)}")
+        return f"Error: Failed to add chunks index into the database"
+    
+async def upload_hash_ids_file(file: UploadFile = File(...), session: DBSession = Depends(get_session)):
+    """
+    Uploads a dictionary file to the database.
+
+    Args:
+        file (UploadFile): The dictionary file to upload.
+        session (Session): The database session.
+
+    Returns:
+        str: A message indicating the success or failure of the upload.
+    """
+    try:
+        
+        # Read file as text (entire content)
+        contents = await file.read()        
+        
+        records = []
+        batch_size = 10001  # Process in chunks of 10K rows
+        query = text("SELECT xllm_bulk_upsert_hash_ids(:json_data)")
+        for line in contents.decode("latin1").strip().split("\n"):
+            parts = line.split("\t")
+            if len(parts) == 2:
+                key = parts[0]
+                hashes = eval(parts[1])
+                records.append({"key": key, "hashes": hashes})
+            
+            if len(records) >= batch_size:
+                json_data = json.dumps(records)
+                session.execute(query, {"json_data": json_data})
+                records = []
+
+        if records:
+            print(f"sample record: {records[0]}") 
+            json_data = json.dumps(records)
+            session.execute(query, {"json_data": json_data})
+        
+        session.commit()        
+        
+        return {"message": "Success: File uploaded and hash ids data inserted into database."}
+    except Exception as e:
+        print(f"Exception: {str(e)}")
+        return f"Error: Failed to add hash ids into the database"
+    
+    
+async def upload_hash_unstem_file(file: UploadFile = File(...), session: DBSession = Depends(get_session)):
+    """
+    Uploads a dictionary file to the database.
+
+    Args:
+        file (UploadFile): The dictionary file to upload.
+        session (Session): The database session.
+
+    Returns:
+        str: A message indicating the success or failure of the upload.
+    """
+    try:
+        
+        # Read file as text (entire content)
+        contents = await file.read()        
+        
+        records = []
+        batch_size = 10001  # Process in chunks of 10K rows
+        query = text("SELECT xllm_bulk_upsert_hash_unstem(:json_data)")
+        for line in contents.decode("latin1").strip().split("\n"):
+            parts = line.split("\t")
+            if len(parts) == 2:
+                stem = parts[0]
+                keywords = ", ".join(eval(parts[1]))
+                records.append({"stem": stem, "keywords": keywords})
+            
+            if len(records) >= batch_size:
+                json_data = json.dumps(records)
+                session.execute(query, {"json_data": json_data})
+                records = []
+
+        if records:
+            print(f"sample record: {records[0]}") 
+            json_data = json.dumps(records)
+            session.execute(query, {"json_data": json_data})
+        
+        session.commit()        
+        
+        return {"message": "Success: File uploaded and hash unstem data inserted into database."}
+    except Exception as e:
+        print(f"Exception: {str(e)}")
+        return f"Error: Failed to add hash unstem into the database"
+    
+async def upload_hash_stem_file(file: UploadFile = File(...), session: DBSession = Depends(get_session)):
+    """
+    Uploads a dictionary file to the database.
+
+    Args:
+        file (UploadFile): The dictionary file to upload.
+        session (Session): The database session.
+
+    Returns:
+        str: A message indicating the success or failure of the upload.
+    """
+    try:
+        
+        # Read file as text (entire content)
+        contents = await file.read()        
+        
+        records = []
+        batch_size = 10001  # Process in chunks of 10K rows
+        query = text("SELECT xllm_bulk_upsert_hash_stem(:json_data)")
+        for line in contents.decode("latin1").strip().split("\n"):
+            parts = line.split("\t")
+            if len(parts) == 2:
+                keyword = parts[0]
+                stem = parts[1]
+                records.append({"keyword": keyword, "stem": stem})
+            
+            if len(records) >= batch_size:
+                json_data = json.dumps(records)
+                session.execute(query, {"json_data": json_data})
+                records = []
+
+        if records:
+            print(f"sample record: {records[0]}") 
+            json_data = json.dumps(records)
+            session.execute(query, {"json_data": json_data})
+        
+        session.commit()        
+        
+        return {"message": "Success: File uploaded and hash stem data inserted into database."}
+    except Exception as e:
+        print(f"Exception: {str(e)}")
+        return f"Error: Failed to add hash stem into the database"
