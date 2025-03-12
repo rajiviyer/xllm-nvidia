@@ -465,3 +465,42 @@ async def upload_hash_stem_file(file: UploadFile = File(...), session: DBSession
     except Exception as e:
         print(f"Exception: {str(e)}")
         return f"Error: Failed to add hash stem into the database"
+    
+async def upload_stop_words_file(file: UploadFile = File(...), session: DBSession = Depends(get_session)):
+    """
+    Uploads a dictionary file to the database.
+
+    Args:
+        file (UploadFile): The dictionary file to upload.
+        session (Session): The database session.
+
+    Returns:
+        str: A message indicating the success or failure of the upload.
+    """
+    try:
+        
+        # Read file as text (entire content)
+        contents = await file.read()        
+        
+        records = []
+        batch_size = 10001  # Process in chunks of 10K rows
+        query = text("SELECT xllm_bulk_insert_stop_words(:json_data)")
+        for line in contents.decode("latin1").strip().split("\n"):
+            records.append(line)
+            
+            if len(records) >= batch_size:
+                json_data = json.dumps(records) 
+                session.execute(query, {"json_data": json_data})
+                records = []
+
+        if records:
+            print(f"sample record: {records[0]}") 
+            json_data = json.dumps(records)
+            session.execute(query, {"json_data": json_data})
+        
+        session.commit()        
+        
+        return {"message": "Success: File uploaded and stop words inserted into database."}
+    except Exception as e:
+        print(f"Exception: {str(e)}")
+        return f"Error: Failed to add stop words into the database"

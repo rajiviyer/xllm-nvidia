@@ -53,3 +53,7 @@ class XLLMHashUnStem(SQLModel, table=True):
     __tablename__ = "xllm_hash_unstem"
     stem: str = Field(primary_key=True, index=True)  # Unique identifier
     keywords: str
+    
+class XLLMStopWords(SQLModel, table=True):
+    __tablename__ = "xllm_stop_words"
+    stop_word: str = Field(primary_key=True, index=True)
