@@ -3,6 +3,7 @@ from typing import Optional, List
 from .utils.params import (get_bin, ignore, sample_queries, 
                      sectionLabels, backendTables)
 
+from .utils.db_query import getDocsFromDB
 from .utils import functions as exllm
 from .llm_processing import parse_docs
 
@@ -287,15 +288,7 @@ def get_docs(form_params: frontendParamsType) -> dict[List[dict], List[dict]]:
     complete_content = processed_content
     return {"embeddings": doc_embeddings, "docs": docs, "complete_content": complete_content}
 
-def preprocess_query(query):
-    """
-    Cleans the query by removing stopwords and lowercasing words.
-    """
-    stopwords = {"what", "are", "the"}  # Load from PostgreSQL if needed
-    tokens = [word.lower() for word in query.split() if word.lower() not in stopwords]
-    return tokens
-
-def get_docs_from_db(form_params: frontendParamsType) -> dict[List[dict], List[dict]]:
+def get_docs_from_db(form_params: frontendParamsType) -> List[dict]:
     """
     Get docs from db
 
@@ -308,16 +301,30 @@ def get_docs_from_db(form_params: frontendParamsType) -> dict[List[dict], List[d
     print("form_params", form_params)
     use_stem = form_params['useStem']
     beta = form_params['beta']
-    query_text = form_params['queryText']
+    query = form_params['queryText']
     distill = form_params['distill']
     max_token_count = form_params['maxTokenCount']
     nresults = form_params['nresults']
     print("use_stem", use_stem)
     print("beta", beta)
-    print("query_text", query_text)
+    print("query", query)
     print("distill", distill)
     print("max_token_count", max_token_count)
     print("nresults", nresults)
     
+    query_text = query.replace('?',' ').replace('(',' ').replace(')',' ').replace('.',' ')
+    query_text = query_text.replace("'",'').replace("\\s",'')
+    query_text = query_text.split(' ')
+    
+    stemmed_text = [stemmer.stem(word) for word in query_text]
+    query_params = {
+        "use_stem": use_stem,
+        "beta": beta,
+        "query_text": query_text,
+        "stemmed_text": stemmed_text
+    }
+    
     # Step 1: Preprocess query
-    query_tokens = preprocess_query(query)    
+    docs = getDocsFromDB(query_params) 
+    print("docs", docs)
+    return docs  

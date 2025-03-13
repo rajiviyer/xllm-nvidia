@@ -8,6 +8,15 @@ class frontendParamsType(TypedDict):
     maxTokenCount: int
     nresults: int
     
+class getDocsFromDBParamsType(TypedDict):
+    use_stem: bool
+    beta: float
+    query_text: str
+    stemmed_text: list[str]
+    # distill: bool
+    # maxTokenCount: int
+    # nresults: int
+    
     # embeddingKeyMinSize: int
     # embeddingValuesMinSize: int
     # min_pmi: float

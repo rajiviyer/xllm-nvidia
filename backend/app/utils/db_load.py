@@ -2,6 +2,7 @@ from fastapi import Depends, UploadFile, File, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 from ..db.db_connector import get_session
+from .types import getDocsFromDBParamsType
 from ..db_models.xllm_models import XLLMDictionary, XLLMEmbeddings
 from typing import Dict, List, Optional
 import numpy as np
@@ -503,4 +504,4 @@ async def upload_stop_words_file(file: UploadFile = File(...), session: DBSessio
         return {"message": "Success: File uploaded and stop words inserted into database."}
     except Exception as e:
         print(f"Exception: {str(e)}")
-        return f"Error: Failed to add stop words into the database"
+        return f"Error: Failed to add stop words into the database"   
