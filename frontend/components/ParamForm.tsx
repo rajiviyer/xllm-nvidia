@@ -28,7 +28,7 @@ const ParamForm: React.FC<ResultDocProps> = ({ setResult }) => {
     beta: 1.0,
     queryText: queries[0],
     distill: true,
-    maxTokenCount: 2,
+    maxTokenCount: 500,
     nresults: 15
   };
 
@@ -226,7 +226,6 @@ const ParamForm: React.FC<ResultDocProps> = ({ setResult }) => {
                   {...register("maxTokenCount", { required: true })}
                   value={formData.maxTokenCount}
                   min="2"
-                  max="5"
                   step="1"
                   onChange={(event) => handleInputChange(event)}
                   className="bg-bondingai_primary border border-bondingai_input_border text-slate-300 text-sm rounded-md w-full p-1"

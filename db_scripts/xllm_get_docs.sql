@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION process_query(query_params JSONB )
+CREATE OR REPLACE FUNCTION xllm_get_docs(query_params JSONB )
 RETURNS TABLE (
     id TEXT,
     content JSONB,
@@ -9,7 +9,9 @@ RETURNS TABLE (
 DECLARE
 	v_query_text TEXT[] := (SELECT array_agg(value) FROM jsonb_array_elements_text(query_params->'query_text'));
 	v_stemmed_text TEXT[]:= (SELECT array_agg(value) FROM jsonb_array_elements_text(query_params->'stemmed_text'));
-	v_use_stem BOOL := query_params->> 'use_stem';
+	v_use_stem BOOLEAN := query_params->> 'use_stem';
+	v_distill BOOLEAN := query_params->> 'distill';
+	v_max_token_count INT := query_params->>'max_token_count';
 	v_beta FLOAT := query_params->> 'beta';
 	v_final_tokens TEXT[];
 	v_combined_tokens TEXT[];
@@ -23,18 +25,28 @@ DECLARE
 	v_chunk_rank_result JSONB[];
 BEGIN	
 
-	RAISE NOTICE 'Query Text %', v_query_text; 
-	RAISE NOTICE 'Stemmed Text %', v_stemmed_text;
-	RAISE NOTICE 'Use Stem? %', v_use_stem;
-	RAISE NOTICE 'Beta %', v_beta;
+    RAISE NOTICE 'Query Text %', v_query_text;
+    RAISE NOTICE 'Stemmed Text %', v_stemmed_text;
+    RAISE NOTICE 'Use Stem? %', v_use_stem;
+    RAISE NOTICE 'Distill? %', v_distill;
+	RAISE NOTICE 'Max Token Count %', v_max_token_count;
+    RAISE NOTICE 'Beta %', v_beta;
 
-	WITH query_tokens AS 
+
+	-- Step 1: Extract Final Tokens
+	WITH
+	query_tokens AS 
 	(
 		SELECT unnest(v_query_text) AS query_token
 	),
-	stemmed_tokens AS 
+ 	stemmed_tokens AS 
 	(
-		SELECT unnest(v_stemmed_text) AS stemmed_token where true = v_use_stem
+		SELECT unnest(
+					CASE 
+						WHEN v_use_stem THEN v_stemmed_text
+						ELSE ARRAY[]::TEXT[]
+					END
+			) AS stemmed_token
 	),
 	unstemmed_tokens AS
 	(
@@ -59,6 +71,7 @@ BEGIN
 
 	n := array_length(v_final_tokens, 1);
 
+	-- Step 2: Generate N-Gram Combinations (Bitwise Logic)
     -- Generate all possible binary combinations (1 to 2^N - 1)
     FOR binary_num IN 1 .. (POWER(2, n) - 1) LOOP
         token_combination := '';  -- Reset for each iteration
@@ -82,32 +95,28 @@ BEGIN
 
 	RAISE NOTICE 'Combined Tokens: %', v_combined_tokens; 
 	
+	-- Step 3: Create Temporary Dictionary Table
 	DROP TABLE IF EXISTS temp_dictionary;
-
 	CREATE TEMP TABLE temp_dictionary (
 		token TEXT PRIMARY KEY,
 		frequency FLOAT
 	) ON COMMIT PRESERVE ROWS;
 
-
-	insert into temp_dictionary(token, frequency)
-	with combined_tokens as 
+	INSERT INTO temp_dictionary(token, frequency)
+	WITH combined_tokens AS 
 	(
-		select unnest(v_combined_tokens) AS combined_token
+		SELECT unnest(v_combined_tokens) AS combined_token
 	),
-	sorted_ngram_tokens as
+	sorted_ngram_tokens AS
 	(
-		select regexp_split_to_table(ngrams, E', ') as ngram_token
-		from xllm_sorted_ngrams
-		where key in (select combined_token from combined_tokens)
+		SELECT regexp_split_to_table(ngrams, E', ') AS ngram_token
+		FROM xllm_sorted_ngrams
+		WHERE key IN (SELECT combined_token FROM combined_tokens)
 	)
-	select token, frequency from xllm_dictionary where token in (select ngram_token from sorted_ngram_tokens);
+	SELECT token, frequency FROM xllm_dictionary WHERE token IN (SELECT ngram_token FROM sorted_ngram_tokens);
 
-	select count(*) into v_record_count from temp_dictionary;
-	
-	RAISE NOTICE 'record_count %', v_record_count;
-
-	insert into temp_dictionary(token, frequency)
+	-- Step 4: Insert multi-tokens in temp_dictionary
+	INSERT INTO temp_dictionary(token, frequency)
 	with combined_tokens as 
 	(
 		select unnest(v_combined_tokens) AS combined_token
@@ -119,17 +128,30 @@ BEGIN
 	)
 	select token, frequency from xllm_dictionary where token in (select multi_token from multi_tokens);
 
+	-- Step 5: Apply `distill` Logic If `v_distill = TRUE`
 
-	select count(*) into v_record_count from temp_dictionary;
-	RAISE NOTICE 'record_count %', v_record_count;
+    IF v_distill THEN
+        -- Remove tokens exceeding `maxTokenCount`
+        DELETE FROM temp_dictionary WHERE frequency > v_max_token_count;
 
---	COMMIT;
+        -- Remove redundant n-grams
+        DELETE FROM temp_dictionary t1
+	    WHERE EXISTS (
+	        SELECT 1 FROM temp_dict t2
+	        WHERE t1.token <> t2.token
+	        AND (
+	            (POSITION(t1.token IN t2.token) > 0 and t1.frequency = t2.frequency)
+	            or (t1.token IN (SELECT UNNEST(STRING_TO_ARRAY(t2.token, '~'))))
+	        )
+	    );
+    END IF;
 
-	FOR v_record in (select token, frequency from temp_dictionary) LOOP
-		v_record_text := v_record::TEXT;
-		RAISE NOTICE 'dictionary record: %', v_record_text;
-	END LOOP; 
+    -- Debugging Output for Dictionary Cleanup
+    SELECT COUNT(*) INTO v_record_count FROM temp_dictionary;
+    RAISE NOTICE 'Final Dictionary Record Count: %', v_record_count;
 
+
+	-- Step 6: Retrieve Embeddings into a Temporary Table
 	DROP TABLE IF EXISTS temp_embeddings;
 
 	CREATE TEMP TABLE temp_embeddings(
@@ -145,15 +167,9 @@ BEGIN
 	    j.value::FLOAT as pmi
 	FROM xllm_embeddings xe , 
 	    jsonb_each(embeddings) j
-	    where xe."key" in (select token from temp_dictionary);
+	    where xe."key" in (select token from temp_dictionary); 
 
---	COMMIT;
-
---	FOR v_record in (select token, embedding, pmi from temp_embeddings) LOOP
---		v_record_text := v_record::TEXT;
---		RAISE NOTICE 'embedding record: %', v_record_text;
---	END LOOP; 
-
+	-- Step 7: Ranking & Retrieval
 	RETURN QUERY
 		with chunk_data as
 		(

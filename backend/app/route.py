@@ -39,19 +39,22 @@ def home():
 #             Ctokens size: {len(backendTables['ctokens'])}
 # #         """
 
+# @app.post("/api/docs")
+# def get_docs(docs: Annotated[dict, Depends(get_docs)]):
+#     if docs:
+#         print("Successfully retrieved docs")
+#         raw_content = docs["complete_content"]
+#         processed_content = parse_docs(raw_content)
+#         docs["complete_content"] = processed_content
+#     return docs
+
 @app.post("/api/docs")
-def get_docs(docs: Annotated[dict, Depends(get_docs)]):
+def get_docs_from_db(docs: Annotated[dict, Depends(get_docs_from_db)]):
     if docs:
         print("Successfully retrieved docs")
         raw_content = docs["complete_content"]
         processed_content = parse_docs(raw_content)
         docs["complete_content"] = processed_content
-    return docs
-
-@app.post("/api/docs_from_db")
-def get_docs_from_db(docs: Annotated[dict, Depends(get_docs_from_db)]):
-    if docs:
-        print("Successfully retrieved docs")
     return docs
 
 @app.post("/api/parse_docs")

@@ -3,7 +3,7 @@ from typing import Optional, List
 from .utils.params import (get_bin, ignore, sample_queries, 
                      sectionLabels, backendTables)
 
-from .utils.db_query import getDocsFromDB
+from .utils.db_query import getDocsFromDB, getEmbeddingsFromDB
 from .utils import functions as exllm
 from .llm_processing import parse_docs
 
@@ -316,15 +316,45 @@ def get_docs_from_db(form_params: frontendParamsType) -> List[dict]:
     query_text = query_text.replace("'",'').replace("\\s",'')
     query_text = query_text.split(' ')
     
-    stemmed_text = [stemmer.stem(word) for word in query_text]
+    query_text = [ word.lower() for word in query_text if word ]
+    stemmed_text = [ stemmer.stem(word) for word in query_text ]
     query_params = {
         "use_stem": use_stem,
         "beta": beta,
         "query_text": query_text,
-        "stemmed_text": stemmed_text
+        "stemmed_text": stemmed_text,
+        "distill": distill,
+        "max_token_count": max_token_count
     }
     
     # Step 1: Preprocess query
-    docs = getDocsFromDB(query_params) 
-    print("docs", docs)
-    return docs  
+    docs_from_db = getDocsFromDB(query_params)
+    docs = [
+        {
+            "id": row[0],
+            "content": row[1],
+            "size": row[2],
+            "agents": row[3],
+            "rank": row[4],
+            "hash_id": ""
+        }
+        for row in docs_from_db
+        ]
+    
+    embeddings_from_db = getEmbeddingsFromDB(query_params)
+    doc_embeddings = [
+        {
+            "word": row[0],
+            "embedding": row[1],
+            "pmi": row[2]
+        }
+        for row in embeddings_from_db
+    ]
+    
+    print(f"Generating User Friendly Result")
+    complete_raw_content = " ".join([doc["content"]["description_text"] for doc in docs])
+    question = form_params['queryText']
+    processed_content = "Test LLM Result"
+    print(f"Processed content: {processed_content}")
+    complete_content = processed_content
+    return {"embeddings": doc_embeddings, "docs": docs, "complete_content": complete_content}

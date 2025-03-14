@@ -71,17 +71,17 @@ function Output({ result }: { result: DataProps }) {
               <table className="embeddings-table">
                 <thead>
                   <tr>
-                    <th>PMI</th>
+                    <th>Word [from prompt]</th>                    
                     <th>Token [from embeddings]</th>
-                    <th>Word [from prompt]</th>
+                    <th>PMI</th>
                   </tr>
                 </thead>
                 <tbody>
                   {embeddingsData.map((embedding, index) => (
                     <tr key={index}>
+                      <td>{embedding.word}</td>                      
+                      <td>{embedding.embedding}</td>
                       <td>{embedding.pmi.toFixed(2)}</td>
-                      <td>{embedding.token}</td>
-                      <td>{embedding.word}</td>
                     </tr>
                   ))}
                 </tbody>

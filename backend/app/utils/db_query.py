@@ -24,7 +24,7 @@ def getDocsFromDB(params: getDocsFromDBParamsType, session: Session = None):
         session = next(session_gen)
     
     try:            
-        query = text("SELECT * from process_query(:json_data)")
+        query = text("SELECT * from xllm_get_docs(:json_data)")
         docs = session.execute(query, {"json_data": json.dumps(params)}).fetchall()
         return docs
     except Exception as e:
@@ -32,4 +32,29 @@ def getDocsFromDB(params: getDocsFromDBParamsType, session: Session = None):
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         session.close()
+
+def getEmbeddingsFromDB(params: getDocsFromDBParamsType, session: Session = None):
+    """
+    Get embeddings from the database.
+
+    Args:
+        params (getDocsFromDBParamsType): Parameters for the query.
+        session (Session): The database session.
+
+    Returns:
+        List[Dict[str, float]]: A list of dictionaries containing document embeddings and metadata.
+    """
+    if session is None:
+        session_gen = get_session()
+        session = next(session_gen)
+    
+    try:            
+        query = text("SELECT * from xllm_get_embeddings(:json_data)")
+        embeddings = session.execute(query, {"json_data": json.dumps(params)}).fetchall()
+        return embeddings
+    except Exception as e:        
+        print(f"Error in getEmbeddingsFromDB: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        session.close()        
         

@@ -51,7 +51,7 @@ export interface Embeddings {
   // n: number;
   pmi: number;
   // f: string;
-  token: string;
+  embedding: string;
   word: string;
 }
 
