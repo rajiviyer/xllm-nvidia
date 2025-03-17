@@ -3,13 +3,19 @@ import Card from "./Card";
 import { Doc, Embeddings, DataProps } from "@/lib/utils/types";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
+import Button from "./Button";
 import "./Output.css";
 function Output({ result }: { result: DataProps }) {
   const docs: Doc[] = result["docs"];
   const processed_content: string = result["complete_content"];
 
   const nResult: number = docs.length;
-  const embeddingsData: Embeddings[] = result["embeddings"];
+  // const embeddingsData: Embeddings[] = result["embeddings"];
+  const embeddingsData: Embeddings[] = [
+    { pmi: 0.9, embedding: "vector1", word: "finance" },
+    { pmi: 0.8, embedding: "vector2", word: "statement" },
+    { pmi: 0.7, embedding: "vector3", word: "investment" }
+  ];
   const nEmbeddings: number = embeddingsData.length;
   console.log("nEmbeddings", nEmbeddings);
   console.log("nResult", nResult);
@@ -46,6 +52,12 @@ function Output({ result }: { result: DataProps }) {
     setIsEmbeddingsExpanded(!isEmbeddingsExpanded);
   };
 
+  const openGraphPage = () => {
+    // Encode `embeddingsData` into a URL-safe JSON string
+    const encodedEmbeddings = encodeURIComponent(JSON.stringify(embeddingsData));
+    window.open(`/graph?embeddings=${encodedEmbeddings}`, "_blank"); // Opens graph page in a new tab
+  };
+
   return (
     <div>
       {nResult > 0 && (
@@ -61,9 +73,18 @@ function Output({ result }: { result: DataProps }) {
           <h2 className="text-slate-100 mb-3 text-center mt-6">Docs</h2>
           {/* Button to toggle embeddings container */}
           {nEmbeddings > 0 && (
-            <button onClick={toggleEmbeddings} className="embeddings-btn">
-              {isEmbeddingsExpanded ? "Hide Embeddings" : "Show Embeddings"}
-            </button>
+            <div className="flex justify-left columns-2 gap-4">
+              <Button buttonType="button" onClick={toggleEmbeddings}>
+                {isEmbeddingsExpanded ? "Hide Embeddings" : "Show Embeddings"}
+              </Button>              
+              {/* <button onClick={toggleEmbeddings} className="embeddings-btn">
+                {isEmbeddingsExpanded ? "Hide Embeddings" : "Show Embeddings"}
+              </button> */}
+              {/* ✅ Button to open graph page */}
+              <Button buttonType="button" onClick={openGraphPage}>
+                Open Graph Page
+              </Button>
+            </div>
           )}
           {/* Expandable container for embeddings data */}
           {nEmbeddings > 0 && isEmbeddingsExpanded && (

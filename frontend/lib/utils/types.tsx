@@ -64,3 +64,24 @@ export interface DataProps {
 export interface ResultDocProps {
   setResult: (result: DataProps) => void;
 }
+
+export type GraphNode = {
+  id: string;
+  label: string;
+  isParent?: boolean; // New property to mark parent nodes
+};
+
+export type GraphLink = {
+  source: GraphNode;
+  target: GraphNode;
+  weight: number;
+};
+
+export type GraphData = {
+  nodes: GraphNode[];
+  links: GraphLink[];
+};
+
+export interface GraphProps {
+  embeddings: Embeddings[];
+};
