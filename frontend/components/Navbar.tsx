@@ -2,6 +2,9 @@
 import Link from "next/link";
 // import logo from "@/public/nvidia.png";
 import Image from "next/image";
+import {
+  HiOutlineHome,
+} from "react-icons/hi2";
 function Navbar() {
   return (
     // <nav className="py-1 flex gap-x-4 border-b-1 border-slate-600 bg-slate-800 text-slate-200">
@@ -33,6 +36,9 @@ function Navbar() {
               Documentation
             </button>
           </Link>
+          <Link href="/">
+            <div className="px-3 py-1 text-2xl"><HiOutlineHome /></div>
+          </Link>          
         </div>
       </div>
       {/* <img src={logo.src} alt="xllm logo" className="pl-4" width="45" />

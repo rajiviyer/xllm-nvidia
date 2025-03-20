@@ -1,14 +1,14 @@
 "use client";
 import { useSearchParams } from "next/navigation";
 import Graph from "@/components/Graph";
-import { Embeddings } from "@/lib/utils/types";
+import { Embedding } from "@/lib/utils/types";
 
 export default function GraphPageContent() {
     const searchParams = useSearchParams();
     const embeddingsParam = searchParams.get("embeddings");
 
     // ✅ Decode and parse embeddings
-    let embeddings: Embeddings[] = [];
+    let embeddings: Embedding[] = [];
     if (embeddingsParam) {
         try {
             embeddings = JSON.parse(decodeURIComponent(embeddingsParam));

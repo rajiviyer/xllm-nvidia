@@ -47,7 +47,7 @@ export interface Doc {
   hash_id: string;
 }
 
-export interface Embeddings {
+export interface Embedding {
   // n: number;
   pmi: number;
   // f: string;
@@ -57,7 +57,7 @@ export interface Embeddings {
 
 // Define the interface for the function argument
 export interface DataProps {
-  embeddings: Embeddings[];
+  embeddings: Embedding[];
   docs: Doc[];
   complete_content: string;
 }
@@ -83,5 +83,9 @@ export type GraphData = {
 };
 
 export interface GraphProps {
-  embeddings: Embeddings[];
+  embeddings: Embedding[];
 };
+
+// export interface EmbeddingsType {
+//   embeddings: Embedding[]
+// }

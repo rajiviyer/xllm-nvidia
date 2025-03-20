@@ -1,17 +1,25 @@
 "use client";
 import { useForm } from "react-hook-form";
 import { FormType } from "@/lib/utils/types";
-import { useState } from "react";
-import React from "react";
+import React, { useState, useContext } from "react";
 import OptionButton from "./OptionButton";
 import Button from "./Button";
 import { queries } from "@/lib/utils/data";
 import { ResultDocProps } from "@/lib/utils/types";
-import { Slider } from "@/components/ui/slider";
-import Link from "next/link";
+import { DataPropsContext } from "@/app/_context/DataPropsContext";
+// import { Slider } from "@/components/ui/slider";
+// import Link from "next/link";
 import Image from "next/image";
 
-const ParamForm: React.FC<ResultDocProps> = ({ setResult }) => {
+function ParamForm() {
+
+  const dataPropsContext = useContext(DataPropsContext);
+  if (!dataPropsContext) {
+  throw new Error('dataPropsContext is not available');
+  }
+  
+  const { result, setResult } = dataPropsContext;    
+
   const { register, handleSubmit } = useForm<FormType>();
   // const [byPassList, setByPassList] = useState(false);
   const [seedQuery, setSeedQuery] = useState(true);
@@ -144,6 +152,8 @@ const ParamForm: React.FC<ResultDocProps> = ({ setResult }) => {
       if (result_data) {
         // console.log(result_data.length);
         setResult(result_data);
+        console.log("Setting Embeddings context in ParamForm", result_data.embeddings);
+        // setEmbeddings(result_data.embeddings);
       } else {
         console.log("No result found");
       }

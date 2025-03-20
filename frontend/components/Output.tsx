@@ -1,21 +1,23 @@
 import Card from "./Card";
-// import { Doc, Embeddings, DataProps } from "@/lib/utils/types";
-import { Doc, Embeddings, DataProps } from "@/lib/utils/types";
-import { useState } from "react";
+import { Doc, Embedding, DataProps } from "@/lib/utils/types";
+import React, {useState} from 'react';
 import ReactMarkdown from "react-markdown";
 import Button from "./Button";
 import "./Output.css";
+import { useRouter } from "next/navigation";
 function Output({ result }: { result: DataProps }) {
+
   const docs: Doc[] = result["docs"];
   const processed_content: string = result["complete_content"];
+  const router = useRouter();
 
   const nResult: number = docs.length;
-  // const embeddingsData: Embeddings[] = result["embeddings"];
-  const embeddingsData: Embeddings[] = [
-    { pmi: 0.9, embedding: "vector1", word: "finance" },
-    { pmi: 0.8, embedding: "vector2", word: "statement" },
-    { pmi: 0.7, embedding: "vector3", word: "investment" }
-  ];
+  const embeddingsData: Embedding[] = result["embeddings"];
+  // const embeddingsData: Embedding[] = [
+  //   { pmi: 0.9, embedding: "vector1", word: "finance" },
+  //   { pmi: 0.8, embedding: "vector2", word: "statement" },
+  //   { pmi: 0.7, embedding: "vector3", word: "investment" }
+  // ];
   const nEmbeddings: number = embeddingsData.length;
   console.log("nEmbeddings", nEmbeddings);
   console.log("nResult", nResult);
@@ -54,8 +56,9 @@ function Output({ result }: { result: DataProps }) {
 
   const openGraphPage = () => {
     // Encode `embeddingsData` into a URL-safe JSON string
-    const encodedEmbeddings = encodeURIComponent(JSON.stringify(embeddingsData));
-    window.open(`/graph?embeddings=${encodedEmbeddings}`, "_blank"); // Opens graph page in a new tab
+    // const encodedEmbeddings = encodeURIComponent(JSON.stringify(embeddingsData));
+    // window.open(`/graph`, "_blank"); // Opens graph page in a new tab
+    router.push("/graph");
   };
 
   return (
