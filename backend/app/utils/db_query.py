@@ -56,5 +56,5 @@ def getEmbeddingsFromDB(params: getDocsFromDBParamsType, session: Session = None
         print(f"Error in getEmbeddingsFromDB: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
     finally:
-        session.close()        
+        session.close()
         

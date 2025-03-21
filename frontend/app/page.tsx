@@ -2,7 +2,7 @@
 import ParamForm from "@/components/ParamForm";
 import Output from "@/components/Output";
 import React, { useContext } from 'react';
-import { Doc, DataProps } from "@/lib/utils/types";
+// import { Doc, DataProps } from "@/lib/utils/types";
 import { DataPropsContext } from "./_context/DataPropsContext";
 function HomePage() {
 

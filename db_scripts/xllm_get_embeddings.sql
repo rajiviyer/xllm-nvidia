@@ -62,101 +62,104 @@ BEGIN
 		)
 		order by final_token
 	)
-	SELECT array_agg(final_token) INTO v_final_tokens FROM final_tokens;
+	SELECT COALESCE(array_agg(final_token), ARRAY[]::TEXT[]) INTO v_final_tokens FROM final_tokens;
 	
 	RAISE NOTICE 'Final Tokens: %', v_final_tokens;
 
 
 	n := array_length(v_final_tokens, 1);
 
-	-- Step 2: Generate N-Gram Combinations (Bitwise Logic)
-    -- Generate all possible binary combinations (1 to 2^N - 1)
-    FOR binary_num IN 1 .. (POWER(2, n) - 1) LOOP
-        token_combination := '';  -- Reset for each iteration
-        
-        --Iterate over each bit position (word index)
-        FOR i IN 1 .. n LOOP
-             --Check if the i-th bit is set (binary_num AND (2^(i-1)))
-            IF (binary_num & POWER(2, i-1)::INT) > 0 THEN
-                 --Concatenate words using ~ separator
-                IF token_combination IS NULL or token_combination = '' THEN
-                    token_combination := v_final_tokens[i];
-				ELSE
-					token_combination := token_combination || '~' || v_final_tokens[i];
-                END IF;
-            END IF;
-        END LOOP;
-        
-         --Store generated n-gram combination
-        v_combined_tokens := array_append(v_combined_tokens, token_combination); 
-    END LOOP;
+	if n is not null and n > 0 then
 
-	RAISE NOTICE 'Combined Tokens: %', v_combined_tokens; 
-	
-	-- Step 3: Create Temporary Dictionary Table
-	DROP TABLE IF EXISTS temp_dictionary;
-	CREATE TEMP TABLE temp_dictionary (
-		token TEXT PRIMARY KEY,
-		frequency FLOAT
-	) ON COMMIT PRESERVE ROWS;
+		-- Step 2: Generate N-Gram Combinations (Bitwise Logic)
+		-- Generate all possible binary combinations (1 to 2^N - 1)
+		FOR binary_num IN 1 .. (POWER(2, n) - 1) LOOP
+			token_combination := '';  -- Reset for each iteration
+			
+			--Iterate over each bit position (word index)
+			FOR i IN 1 .. n LOOP
+				--Check if the i-th bit is set (binary_num AND (2^(i-1)))
+				IF (binary_num & POWER(2, i-1)::INT) > 0 THEN
+					--Concatenate words using ~ separator
+					IF token_combination IS NULL or token_combination = '' THEN
+						token_combination := v_final_tokens[i];
+					ELSE
+						token_combination := token_combination || '~' || v_final_tokens[i];
+					END IF;
+				END IF;
+			END LOOP;
+			
+			--Store generated n-gram combination
+			v_combined_tokens := array_append(v_combined_tokens, token_combination); 
+		END LOOP;
 
-	INSERT INTO temp_dictionary(token, frequency)
-	WITH combined_tokens AS 
-	(
-		SELECT unnest(v_combined_tokens) AS combined_token
-	),
-	sorted_ngram_tokens AS
-	(
-		SELECT regexp_split_to_table(ngrams, E', ') AS ngram_token
-		FROM xllm_sorted_ngrams
-		WHERE key IN (SELECT combined_token FROM combined_tokens)
-	)
-	SELECT token, frequency FROM xllm_dictionary WHERE token IN (SELECT ngram_token FROM sorted_ngram_tokens);
+		RAISE NOTICE 'Combined Tokens: %', v_combined_tokens; 
+		
+		-- Step 3: Create Temporary Dictionary Table
+		DROP TABLE IF EXISTS temp_dictionary;
+		CREATE TEMP TABLE temp_dictionary (
+			token TEXT PRIMARY KEY,
+			frequency FLOAT
+		) ON COMMIT PRESERVE ROWS;
 
-	-- Step 4: Insert multi-tokens in temp_dictionary
-	INSERT INTO temp_dictionary(token, frequency)
-	with combined_tokens as 
-	(
-		select unnest(v_combined_tokens) AS combined_token
-	),
-	multi_tokens as
-	(
-		select combined_token as multi_token from combined_tokens where combined_token like '%~%' and 
-		combined_token not in (select token from temp_dictionary)
-	)
-	select token, frequency from xllm_dictionary where token in (select multi_token from multi_tokens);
+		INSERT INTO temp_dictionary(token, frequency)
+		WITH combined_tokens AS 
+		(
+			SELECT unnest(v_combined_tokens) AS combined_token
+		),
+		sorted_ngram_tokens AS
+		(
+			SELECT regexp_split_to_table(ngrams, E', ') AS ngram_token
+			FROM xllm_sorted_ngrams
+			WHERE key IN (SELECT combined_token FROM combined_tokens)
+		)
+		SELECT token, frequency FROM xllm_dictionary WHERE token IN (SELECT ngram_token FROM sorted_ngram_tokens);
 
-	-- Step 5: Apply `distill` Logic If `v_distill = TRUE`
+		-- Step 4: Insert multi-tokens in temp_dictionary
+		INSERT INTO temp_dictionary(token, frequency)
+		with combined_tokens as 
+		(
+			select unnest(v_combined_tokens) AS combined_token
+		),
+		multi_tokens as
+		(
+			select combined_token as multi_token from combined_tokens where combined_token like '%~%' and 
+			combined_token not in (select token from temp_dictionary)
+		)
+		select token, frequency from xllm_dictionary where token in (select multi_token from multi_tokens);
 
-    IF v_distill THEN
-        -- Remove tokens exceeding `maxTokenCount`
-        DELETE FROM temp_dictionary WHERE frequency > v_max_token_count;
+		-- Step 5: Apply `distill` Logic If `v_distill = TRUE`
 
-        -- Remove redundant n-grams
-        DELETE FROM temp_dictionary t1
-	    WHERE EXISTS (
-	        SELECT 1 FROM temp_dict t2
-	        WHERE t1.token <> t2.token
-	        AND (
-	            (POSITION(t1.token IN t2.token) > 0 and t1.frequency = t2.frequency)
-	            or (t1.token IN (SELECT UNNEST(STRING_TO_ARRAY(t2.token, '~'))))
-	        )
-	    );
-    END IF;
+		IF v_distill THEN
+			-- Remove tokens exceeding `maxTokenCount`
+			DELETE FROM temp_dictionary WHERE frequency > v_max_token_count;
 
-    -- Debugging Output for Dictionary Cleanup
-    SELECT COUNT(*) INTO v_record_count FROM temp_dictionary;
-    RAISE NOTICE 'Final Dictionary Record Count: %', v_record_count;
+			-- Remove redundant n-grams
+			DELETE FROM temp_dictionary t1
+			WHERE EXISTS (
+				SELECT 1 FROM temp_dict t2
+				WHERE t1.token <> t2.token
+				AND (
+					(POSITION(t1.token IN t2.token) > 0 and t1.frequency = t2.frequency)
+					or (t1.token IN (SELECT UNNEST(STRING_TO_ARRAY(t2.token, '~'))))
+				)
+			);
+		END IF;
 
-	return QUERY
-		SELECT 
-		    xe."key"::TEXT as word, 
-		    j.key::TEXT AS embedding, 
-		    j.value::FLOAT as pmi
-		FROM xllm_embeddings xe , 
-		    jsonb_each(embeddings) j
-		    where xe."key" in (select td.token from temp_dictionary td)
-		order by 3 desc;
-	
+		-- Debugging Output for Dictionary Cleanup
+		SELECT COUNT(*) INTO v_record_count FROM temp_dictionary;
+		RAISE NOTICE 'Final Dictionary Record Count: %', v_record_count;
+
+		return QUERY
+			SELECT 
+				xe."key"::TEXT as word, 
+				j.key::TEXT AS embedding, 
+				j.value::FLOAT as pmi
+			FROM xllm_embeddings xe , 
+				jsonb_each(embeddings) j
+				where xe."key" in (select td.token from temp_dictionary td)
+			order by 3 desc;
+			
+	END IF;
 END;
 $$ LANGUAGE plpgsql;	

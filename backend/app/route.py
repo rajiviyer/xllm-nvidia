@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import Annotated
 from .db.db_connector import get_session, create_table
 from contextlib import asynccontextmanager
-from .docs_processing import get_docs, get_docs_from_db
+from .docs_processing import get_docs_from_db
 from .llm_processing import parse_docs
 from .utils.db_load import (upload_dictionary_file, upload_embeddings_file, upload_sorted_ngrams_file, 
                             upload_chunks_file, upload_chunks_contents_file, upload_chunks_agents_file,

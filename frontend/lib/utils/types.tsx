@@ -1,4 +1,4 @@
-export interface FormType {
+export interface FormData {
   useStem: boolean;
   beta: number;
   nresults: number;

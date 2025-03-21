@@ -13,18 +13,3 @@ class getDocsFromDBParamsType(TypedDict):
     beta: float
     query_text: str
     stemmed_text: list[str]
-    # distill: bool
-    # maxTokenCount: int
-    # nresults: int
-    
-    # embeddingKeyMinSize: int
-    # embeddingValuesMinSize: int
-    # min_pmi: float
-    # Customized_pmi: bool
-    # minOutputListSize: int
-    # nABmin: int
-    # ContextMultitokenMinSize: int
-    # maxTokenCount: int
-    # ignoreList: str
-    
-    # bypassIgnoreList: int

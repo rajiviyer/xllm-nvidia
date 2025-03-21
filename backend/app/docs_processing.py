@@ -318,6 +318,7 @@ def get_docs_from_db(form_params: frontendParamsType) -> List[dict]:
     
     query_text = [ word.lower() for word in query_text if word ]
     stemmed_text = [ stemmer.stem(word) for word in query_text ]
+    print(f"stemmed_text: {stemmed_text}")
     query_params = {
         "use_stem": use_stem,
         "beta": beta,

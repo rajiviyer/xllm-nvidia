@@ -4,6 +4,7 @@ import { Inter } from "next/font/google";
 import type { Metadata } from "next";
 // import { EmbeddingsContextProvider } from "@/app/_context/EmbeddingsContext";
 import { DataPropsContextProvider } from "./_context/DataPropsContext";
+import { FormDataContextProvider } from "./_context/FormDataContext";
 
 const inter = Inter({ subsets: ["latin"], weight: ["400", "700"] });
 export const metadata: Metadata = {
@@ -17,13 +18,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <DataPropsContextProvider>
-      <html lang="en">
-        <body className={inter.className}>
-          <Navbar />
-          <main className="bg-bondingai_primary">{children}</main>
-        </body>
-      </html>
-    </DataPropsContextProvider>
+    <FormDataContextProvider>
+      <DataPropsContextProvider>
+        <html lang="en">
+          <body className={inter.className}>
+            <Navbar />
+            <main className="bg-bondingai_primary">{children}</main>
+          </body>
+        </html>
+      </DataPropsContextProvider>
+    </FormDataContextProvider>
   );
 }

@@ -1,17 +1,25 @@
 "use client";
 import { useForm } from "react-hook-form";
-import { FormType } from "@/lib/utils/types";
+import { FormData } from "@/lib/utils/types";
 import React, { useState, useContext } from "react";
 import OptionButton from "./OptionButton";
 import Button from "./Button";
 import { queries } from "@/lib/utils/data";
 import { ResultDocProps } from "@/lib/utils/types";
 import { DataPropsContext } from "@/app/_context/DataPropsContext";
+import { FormDataContext } from "@/app/_context/FormDataContext";
 // import { Slider } from "@/components/ui/slider";
 // import Link from "next/link";
 import Image from "next/image";
 
 function ParamForm() {
+
+  const formDataContext = useContext(FormDataContext);
+  if (!formDataContext) {
+  throw new Error('formDataContext is not available');
+  }
+  
+  const { formDataGlobal, setFormDataGlobal } = formDataContext;
 
   const dataPropsContext = useContext(DataPropsContext);
   if (!dataPropsContext) {
@@ -20,7 +28,7 @@ function ParamForm() {
   
   const { result, setResult } = dataPropsContext;    
 
-  const { register, handleSubmit } = useForm<FormType>();
+  const { register, handleSubmit } = useForm<FormData>();
   // const [byPassList, setByPassList] = useState(false);
   const [seedQuery, setSeedQuery] = useState(true);
   const [useStem, setUseStem] = useState(false);
@@ -126,14 +134,14 @@ function ParamForm() {
 
   // const retrieveDocs = async (data: Object) => {
   const retrieveDocs = async () => {
-    const data = {
+    const formParams = {
       ...formData,
       useStem: useStem,
       distill: distill
     };
 
-    if (data) {
-      console.log(data);
+    if (formParams) {
+      console.log(formParams);
     } else {
       console.log("No data found");
     }
@@ -144,7 +152,7 @@ function ParamForm() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(formParams),
       });
       const result_data = await response.json();
       // print length of the result list
@@ -153,6 +161,7 @@ function ParamForm() {
         // console.log(result_data.length);
         setResult(result_data);
         console.log("Setting Embeddings context in ParamForm", result_data.embeddings);
+        setFormDataGlobal(formParams);
         // setEmbeddings(result_data.embeddings);
       } else {
         console.log("No result found");

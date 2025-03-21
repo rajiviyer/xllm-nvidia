@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { GraphData, GraphNode, GraphLink, Embedding } from "@/lib/utils/types";
+import { GraphData, GraphNode, GraphLink, Embedding, FormData, Doc } from "@/lib/utils/types";
 
 const ForceGraph2D = dynamic(
   () => import("@/lib/utils/NoSSRForceGraph"),
@@ -16,15 +16,16 @@ const getNodeColor = (node: GraphNode) => {
   return colors[hash % colors.length];
 };
 
-interface DocumentCard {
-  id: string;
-  rank: number;
-  size: string;
-  content: string;
-}
+// interface DocumentCard {
+//   id: string;
+//   rank: number;
+//   size: string;
+//   content: string;
+// }
 
 interface GraphProps {
   embeddings: Embedding[];
+  formDataGlobal: FormData;
 }
 
 const updateGraphData = (embeddings: Embedding[], sourceFilter: string, pmiThreshold: number): GraphData => {
@@ -62,14 +63,16 @@ const generateGraphData = (embeddings: Embedding[]): GraphData => {
   return { nodes: Array.from(nodesMap.values()), links };
 };
 
-const Graph = ({ embeddings }: GraphProps) => {
+const Graph = ( { embeddings, formDataGlobal }: GraphProps) => {
   const fgRef = useRef<any>(null);
   const [graphData, setGraphData] = useState<GraphData>(updateGraphData(embeddings, "", 0.3));
   const [sourceFilter, setSourceFilter] = useState<string>("");
   const [pmiThreshold, setPmiThreshold] = useState<number>(0.2);
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
-  const [documents, setDocuments] = useState<DocumentCard[]>([]);
+  const [documents, setDocuments] = useState<Doc[]>([]);
   const [currentDocIndex, setCurrentDocIndex] = useState<number>(0);
+  const URL = process.env.NEXT_PUBLIC_API_URL;
+
 
   useEffect(() => {
     const updatedData = updateGraphData(embeddings, sourceFilter, pmiThreshold);
@@ -97,20 +100,33 @@ const Graph = ({ embeddings }: GraphProps) => {
     const isLeafNode = !graphData.links.some(link => (link.source as GraphNode).id === nodeId);
     if (isLeafNode) {
       setSelectedNode({ id: nodeId, label: node.label ?? nodeId, isParent: node.isParent ?? false });
-      // Simulate document retrieval
-      const dummyDocs: DocumentCard[] = [
-        { id: "1", rank: 1, size: "1.2MB", content: `Content for ${nodeId} doc 1` },
-        { id: "2", rank: 2, size: "2.3MB", content: `Content for ${nodeId} doc 2` },
-        { id: "3", rank: 3, size: "1.5MB", content: `Content for ${nodeId} doc 3` },
-      ];
-      setDocuments(dummyDocs);
-      setCurrentDocIndex(0);
+      const formParams = {
+          ...formDataGlobal,
+        queryText: nodeId
+      }
+      console.log(`formParams in Graph Page: ${JSON.stringify(formParams)}`);
+      
+      fetch(`${URL}/api/docs`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formParams),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          setDocuments(data.docs);
+          setCurrentDocIndex(0);
+        })
+        .catch((error) => {
+          console.error("Error fetching documents:", error);
+        }); 
     }
   };
 
   return (
     <div className="w-full h-screen flex flex-col bg-white">
-      <div className="mt-2 mb-4 space-y-2">
+      <div className="mx-4 mt-2 mb-4 space-y-2 flex flex-wrap items-center gap-4">
         <div className="text-sm">
           <label>Filter by Source: </label>
           <input
@@ -160,36 +176,34 @@ const Graph = ({ embeddings }: GraphProps) => {
         d3AlphaMin={0.001}
       />
 
-      {selectedNode && (
+      {selectedNode && documents.length > 0 && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-4 rounded shadow-md w-96 text-black">
-            <h2 className="text-lg font-bold mb-2">Documents for {selectedNode.label}</h2>
-            {documents.length > 0 && (
-              <div className="border p-4 rounded shadow-sm">
-                <p><strong>ID:</strong> {documents[currentDocIndex].id}</p>
-                <p><strong>Rank:</strong> {documents[currentDocIndex].rank}</p>
-                <p><strong>Size:</strong> {documents[currentDocIndex].size}</p>
-                <p><strong>Content:</strong> {documents[currentDocIndex].content}</p>
-              </div>
-            )}
-            <div className="flex justify-between mt-4">
+            <h2 className="text-lg font-bold mb-2">Documents for: {selectedNode.label}</h2>
+            <div className="border p-2 mb-4">
+              <p><strong>ID:</strong> {documents[currentDocIndex].id}</p>
+              <p><strong>Rank:</strong> {documents[currentDocIndex].rank}</p>
+              <p><strong>Size:</strong> {documents[currentDocIndex].size}</p>
+              <p><strong>Content:</strong> {documents[currentDocIndex].content?.description_text.substring(0, 100) + "..."}</p>
+            </div>
+            <div className="flex justify-between">
               <button
-                className="bg-gray-400 text-white px-3 py-1 rounded disabled:opacity-50"
                 disabled={currentDocIndex === 0}
-                onClick={() => setCurrentDocIndex((prev) => Math.max(prev - 1, 0))}
+                className="bg-gray-300 text-black px-4 py-2 rounded disabled:opacity-50"
+                onClick={() => setCurrentDocIndex(currentDocIndex - 1)}
               >
                 Previous
               </button>
               <button
-                className="bg-blue-500 text-white px-3 py-1 rounded disabled:opacity-50"
                 disabled={currentDocIndex === documents.length - 1}
-                onClick={() => setCurrentDocIndex((prev) => Math.min(prev + 1, documents.length - 1))}
+                className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
+                onClick={() => setCurrentDocIndex(currentDocIndex + 1)}
               >
                 Next
               </button>
             </div>
             <button
-              className="mt-4 bg-red-500 text-white px-4 py-2 rounded w-full"
+              className="mt-4 w-full bg-red-500 text-white px-4 py-2 rounded"
               onClick={() => setSelectedNode(null)}
             >
               Close
