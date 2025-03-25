@@ -1,27 +1,27 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, forwardRef } from "react";
 import dynamic from "next/dynamic";
 import { GraphData, GraphNode, GraphLink, Embedding, FormData, Doc } from "@/lib/utils/types";
 
 const ForceGraph2D = dynamic(
-  () => import("@/lib/utils/NoSSRForceGraph"),
+  () => import("react-force-graph-2d"),
   { ssr: false, loading: () => <div>Loading Graph...</div> }
 );
 
+const NoSSRForceGraph = forwardRef((props: any, ref: any) => (
+  <ForceGraph2D ref={ref} {...props} />
+));
+
 const getNodeColor = (node: GraphNode) => {
   if (node.isParent) {
-    return "#ff5733";
+    // return "#ff5733";
+    // return "#616a6b";
+    return "#7f8c8d"
   }
-  const colors = ["#3498db", "#2ecc71", "#f1c40f", "#9b59b6", "#e74c3c", "#1abc9c"];
+  // const colors = ["#3498db", "#2ecc71", "#f1c40f", "#9b59b6", "#e74c3c", "#1abc9c"];
+  const colors = ["#b7950b"];
   const hash = node.id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
   return colors[hash % colors.length];
 };
-
-// interface DocumentCard {
-//   id: string;
-//   rank: number;
-//   size: string;
-//   content: string;
-// }
 
 interface GraphProps {
   embeddings: Embedding[];
@@ -79,21 +79,25 @@ const Graph = ( { embeddings, formDataGlobal }: GraphProps) => {
     setGraphData(updatedData);
   }, [embeddings, sourceFilter, pmiThreshold]);
 
+
   useEffect(() => {
-    if (fgRef.current && graphData.links.length > 0 && typeof fgRef.current.d3Force === 'function') {
-      const linkForce = fgRef.current.d3Force("link");
-      if (linkForce) {
-        linkForce.distance((link: any) => {
-          const weight = link.weight ?? 0;
-          const minDist = 50;
-          const maxDist = 300;
-          const normalizedWeight = Math.max(0, Math.min(1, weight));
-          return maxDist - normalizedWeight * (maxDist - minDist);
-        });
-        fgRef.current.d3ReheatSimulation();
-      }
-    }
-  }, [graphData]);
+    console.log(`fgRef.current: ${fgRef.current}`);
+    
+    if (!fgRef.current) return;
+
+    fgRef.current.d3Force("link")?.distance((link: GraphLink) => {
+        const minDist = 30;  // Minimum distance for high weight
+        const maxDist = 200; // Maximum distance for low weight
+
+        // ✅ Normalize weight (assuming weights are between 0 and 1)
+        const normalizedWeight = Math.max(0, Math.min(1, link.weight));
+
+        // ✅ Calculate distance (higher weight = closer distance)
+        return maxDist - (normalizedWeight * (maxDist - minDist));
+    });
+
+    fgRef.current.d3ReheatSimulation(); // ✅ Restart simulation to apply changes
+  }, [graphData]); // ✅ Re-run effect when graph data changes   
 
   const handleNodeClick = (node: any) => {
     const nodeId = node.id as string;
@@ -148,32 +152,48 @@ const Graph = ( { embeddings, formDataGlobal }: GraphProps) => {
           />
         </div>
       </div>
-      <ForceGraph2D
+      <NoSSRForceGraph
         ref={fgRef}
         graphData={graphData}
         nodeRelSize={5}
         nodeAutoColorBy="group"
         linkDirectionalArrowLength={5}
+        // linkDirectionalArrowLength={(link: any) => {
+        //   const normalizedPmi = link.weight ?? 0;
+        //   const minArrow = 5;
+        //   const maxArrow = 20;
+        //   return minArrow + normalizedPmi * (maxArrow - minArrow);
+        // }}        
         onNodeClick={handleNodeClick}
-        nodeCanvasObject={(node, ctx, globalScale) => {
+        nodeLabel={(node: any) => {
+          const linkForNode = graphData.links.find(link => (link.target as GraphNode).id === node.id);
+          return linkForNode ? `${node.label} (PMI: ${linkForNode.weight.toFixed(2)})` : node.label;
+        }}        
+        nodeCanvasObject={(node: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
           const fontSize = Math.max(10 / globalScale, 3);
           ctx.font = `${fontSize}px Sans-Serif`;
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
 
           const label = node.label ?? node.id ?? "Unknown";
+          // const linkForNode = graphData.links.find(link => (link.target as GraphNode).id === node.id);
+          // const normalizedPmi = linkForNode ? linkForNode.weight : 0;
+          // const minNodeSize = 6;
+          // const maxNodeSize = 20;
+          // const nodeSize = minNodeSize + normalizedPmi * (maxNodeSize - minNodeSize);         
 
           ctx.fillStyle = getNodeColor(node as GraphNode);
           ctx.beginPath();
           ctx.arc(node.x ?? 0, node.y ?? 0, 10, 0, 2 * Math.PI, false);
+          // ctx.arc(node.x ?? 0, node.y ?? 0, nodeSize, 0, 2 * Math.PI, false);
           ctx.fill();
 
-          ctx.fillStyle = (node.isParent ? "#ff5733" : "#000");
+          // ctx.fillStyle = (node.isParent ? "#3498db" : "#000");
+          // ctx.fillStyle = (node.isParent ? " #616a6b " : "#000");
+          ctx.fillStyle = "#000";
           ctx.fillText(label, (node.x ?? 0) + 12, (node.y ?? 0) + 4);
+          // ctx.fillText(label, (node.x ?? 0) + nodeSize + 5, (node.y ?? 0) + 4);
         }}
-        d3VelocityDecay={0.2}
-        d3AlphaDecay={0.03}
-        d3AlphaMin={0.001}
       />
 
       {selectedNode && documents.length > 0 && (

@@ -85,7 +85,7 @@ function Output({ result }: { result: DataProps }) {
               </button> */}
               {/* ✅ Button to open graph page */}
               <Button buttonType="button" onClick={openGraphPage}>
-                Open Graph Page
+                View Graph
               </Button>
             </div>
           )}
