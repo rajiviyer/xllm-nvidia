@@ -1,15 +1,18 @@
 import React, { useRef, useState, useEffect, forwardRef } from "react";
 import dynamic from "next/dynamic";
 import { GraphData, GraphNode, GraphLink, Embedding, FormData, Doc } from "@/lib/utils/types";
+import Button from "./Button";
 
-const ForceGraph2D = dynamic(
-  () => import("react-force-graph-2d"),
-  { ssr: false, loading: () => <div>Loading Graph...</div> }
-);
+const ForceGraph2D = dynamic(() => import("@/lib/utils/NoSSRForceGraph"), { ssr: false });
 
-const NoSSRForceGraph = forwardRef((props: any, ref: any) => (
-  <ForceGraph2D ref={ref} {...props} />
-));
+// const ForceGraph2D = dynamic(
+//   () => import("react-force-graph-2d"),
+//   { ssr: false, loading: () => <div>Loading Graph...</div> }
+// );
+
+// const NoSSRForceGraph = forwardRef((props: any, ref: any) => (
+//   <ForceGraph2D ref={ref} {...props} />
+// ));
 
 const getNodeColor = (node: GraphNode) => {
   if (node.isParent) {
@@ -97,7 +100,11 @@ const Graph = ( { embeddings, formDataGlobal }: GraphProps) => {
     });
 
     fgRef.current.d3ReheatSimulation(); // ✅ Restart simulation to apply changes
-  }, [graphData]); // ✅ Re-run effect when graph data changes   
+  }, [graphData]); // ✅ Re-run effect when graph data changes
+
+  const checkRef = () => {
+    console.log(`fgRef.current: ${fgRef.current}`);
+  }
 
   const handleNodeClick = (node: any) => {
     const nodeId = node.id as string;
@@ -151,8 +158,11 @@ const Graph = ( { embeddings, formDataGlobal }: GraphProps) => {
             min="0"
           />
         </div>
+        <div className="text-sm">
+          <Button buttonType="button" onClick={checkRef}>Debug</Button>
+        </div>
       </div>
-      <NoSSRForceGraph
+      <ForceGraph2D
         ref={fgRef}
         graphData={graphData}
         nodeRelSize={5}
@@ -176,23 +186,23 @@ const Graph = ( { embeddings, formDataGlobal }: GraphProps) => {
           ctx.textBaseline = "middle";
 
           const label = node.label ?? node.id ?? "Unknown";
-          // const linkForNode = graphData.links.find(link => (link.target as GraphNode).id === node.id);
-          // const normalizedPmi = linkForNode ? linkForNode.weight : 0;
-          // const minNodeSize = 6;
-          // const maxNodeSize = 20;
-          // const nodeSize = minNodeSize + normalizedPmi * (maxNodeSize - minNodeSize);         
+          const linkForNode = graphData.links.find(link => (link.target as GraphNode).id === node.id);
+          const normalizedPmi = linkForNode ? linkForNode.weight : 0;
+          const minNodeSize = 5;
+          const maxNodeSize = 10;
+          const nodeSize = minNodeSize + normalizedPmi * (maxNodeSize - minNodeSize);         
 
           ctx.fillStyle = getNodeColor(node as GraphNode);
           ctx.beginPath();
-          ctx.arc(node.x ?? 0, node.y ?? 0, 10, 0, 2 * Math.PI, false);
-          // ctx.arc(node.x ?? 0, node.y ?? 0, nodeSize, 0, 2 * Math.PI, false);
+          // ctx.arc(node.x ?? 0, node.y ?? 0, 10, 0, 2 * Math.PI, false);
+          ctx.arc(node.x ?? 0, node.y ?? 0, nodeSize, 0, 2 * Math.PI, false);
           ctx.fill();
 
           // ctx.fillStyle = (node.isParent ? "#3498db" : "#000");
           // ctx.fillStyle = (node.isParent ? " #616a6b " : "#000");
           ctx.fillStyle = "#000";
-          ctx.fillText(label, (node.x ?? 0) + 12, (node.y ?? 0) + 4);
-          // ctx.fillText(label, (node.x ?? 0) + nodeSize + 5, (node.y ?? 0) + 4);
+          // ctx.fillText(label, (node.x ?? 0) + 12, (node.y ?? 0) + 4);
+          ctx.fillText(label, (node.x ?? 0) + nodeSize + 5, (node.y ?? 0) + 4);
         }}
       />
 
@@ -223,7 +233,7 @@ const Graph = ( { embeddings, formDataGlobal }: GraphProps) => {
               </button>
             </div>
             <button
-              className="mt-4 w-full bg-red-500 text-white px-4 py-2 rounded"
+              className="mt-4 w-full bg-bondingai_secondary text-black px-4 py-2 rounded"
               onClick={() => setSelectedNode(null)}
             >
               Close
