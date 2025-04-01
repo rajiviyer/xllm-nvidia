@@ -158,9 +158,9 @@ const Graph = ( { embeddings, formDataGlobal }: GraphProps) => {
             min="0"
           />
         </div>
-        <div className="text-sm">
+        {/* <div className="text-sm">
           <Button buttonType="button" onClick={checkRef}>Debug</Button>
-        </div>
+        </div> */}
       </div>
       <ForceGraph2D
         ref={fgRef}
@@ -177,7 +177,8 @@ const Graph = ( { embeddings, formDataGlobal }: GraphProps) => {
         onNodeClick={handleNodeClick}
         nodeLabel={(node: any) => {
           const linkForNode = graphData.links.find(link => (link.target as GraphNode).id === node.id);
-          return linkForNode ? `${node.label} (PMI: ${linkForNode.weight.toFixed(2)})` : node.label;
+          // return linkForNode ? `${node.label} (PMI: ${linkForNode.weight.toFixed(2)})` : node.label;
+          return linkForNode ? `PMI: ${linkForNode.weight.toFixed(2)}` : node.label;
         }}        
         nodeCanvasObject={(node: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
           const fontSize = Math.max(10 / globalScale, 3);
