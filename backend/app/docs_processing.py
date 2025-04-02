@@ -5,7 +5,7 @@ from .utils.params import (get_bin, ignore, sample_queries,
 
 from .utils.db_query import getDocsFromDB, getEmbeddingsFromDB
 from .utils import functions as exllm
-from .llm_processing import parse_docs
+from .llm_processing import parse_docs, parse_docs_gemma
 
 from nltk.stem import PorterStemmer
 from collections import defaultdict
@@ -353,9 +353,11 @@ def get_docs_from_db(form_params: frontendParamsType) -> List[dict]:
     ]
     
     print(f"Generating User Friendly Result")
-    complete_raw_content = " ".join([doc["content"]["description_text"] for doc in docs])
+    complete_raw_content = " ".join([doc["content"]["description_text"] for doc in docs[:7]])
     question = form_params['queryText']
-    processed_content = "Test LLM Result"
+    print(f"Raw Text: {complete_raw_content}")
+    # processed_content = "Test LLM Result"
+    processed_content = parse_docs_gemma(complete_raw_content, question)
     print(f"Processed content: {processed_content}")
     complete_content = processed_content
     return {"embeddings": doc_embeddings, "docs": docs, "complete_content": complete_content}

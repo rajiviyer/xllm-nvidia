@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION public.xllm_bulk_upsert_chunks(records jsonb)
+CREATE OR REPLACE FUNCTION xllm_bulk_update_chunks_contents(records JSONB)
 RETURNS void AS $$
 DECLARE
     record JSONB;
@@ -12,10 +12,10 @@ BEGIN
             record_text := record::TEXT;
 
             -- Insert or update the record
-            INSERT INTO xllm_chunk_details (chunk_id, size)
-            VALUES (record->>'chunk_id', (record->>'size')::INTEGER)
-            ON CONFLICT (chunk_id) DO UPDATE
-            SET size = EXCLUDED.size;
+            UPDATE xllm_chunk_details
+			SET content = (record->>'content')::JSONB
+			WHERE chunk_id = record->>'chunk_id'
+            ;
 
         EXCEPTION WHEN others THEN
             -- Log failed record into error log table

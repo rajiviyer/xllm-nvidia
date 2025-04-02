@@ -8,7 +8,6 @@ class XLLMDictionary(SQLModel, table=True):
     token: str = Field(primary_key=True, index=True)  # Unique key
     frequency: float
     
-    
 class XLLMLoadRunErrorLog(SQLModel, table=True):
     __tablename__ = "xllm_load_run_error_log"
     id: Optional[int] = Field(default=None, primary_key=True, index=True)
