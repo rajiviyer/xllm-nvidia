@@ -58,8 +58,7 @@ export interface Embedding {
 // Define the interface for the function argument
 export interface DataProps {
   embeddings: Embedding[];
-  docs: Doc[];
-  complete_content: string;
+  docs: Doc[]
 }
 export interface ResultDocProps {
   setResult: (result: DataProps) => void;

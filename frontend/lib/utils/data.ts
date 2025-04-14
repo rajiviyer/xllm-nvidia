@@ -1,7 +1,7 @@
 export const queries = [
-'AWS Google cloud',
+'What is the Data Center Growth driven by?',
 'What are the Data Center Highlights?',
-'financial statements 2024',
-'growth projections data',
-'conference public~conference call',
+'What are the Gaming highlights?',
+'What are the main Professional Visualization Highlights?',
+'What is Q3 FY24 Outlook?',
 ];

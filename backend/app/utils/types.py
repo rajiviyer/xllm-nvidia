@@ -13,3 +13,6 @@ class getDocsFromDBParamsType(TypedDict):
     beta: float
     query_text: str
     stemmed_text: list[str]
+
+class UserQuery(TypedDict):
+    user_question: str

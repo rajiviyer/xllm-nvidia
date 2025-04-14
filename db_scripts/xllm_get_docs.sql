@@ -142,7 +142,7 @@ BEGIN
 	        -- Remove redundant n-grams
 	        DELETE FROM temp_dictionary t1
 		    WHERE EXISTS (
-		        SELECT 1 FROM temp_dict t2
+		        SELECT 1 FROM temp_dictionary t2
 		        WHERE t1.token <> t2.token
 		        AND (
 		            (POSITION(t1.token IN t2.token) > 0 and t1.frequency = t2.frequency)

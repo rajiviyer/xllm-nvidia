@@ -12,7 +12,7 @@ export const DataPropsContext = createContext<DataPropsContextType | undefined>(
 );
 
 export const DataPropsContextProvider: React.FC<{children: ReactNode}> = ({children}) => {
-  const [result, setResult] = useState<DataProps>({ embeddings: [], docs: [], complete_content: ""}); 
+  const [result, setResult] = useState<DataProps>({ embeddings: [], docs: []}); 
   return (
     <DataPropsContext.Provider value={{ result, setResult }}>
         {children}

@@ -8,16 +8,11 @@ import { useRouter } from "next/navigation";
 function Output({ result }: { result: DataProps }) {
 
   const docs: Doc[] = result["docs"];
-  const processed_content: string = result["complete_content"];
   const router = useRouter();
 
   const nResult: number = docs.length;
   const embeddingsData: Embedding[] = result["embeddings"];
-  // const embeddingsData: Embedding[] = [
-  //   { pmi: 0.9, embedding: "vector1", word: "finance" },
-  //   { pmi: 0.8, embedding: "vector2", word: "statement" },
-  //   { pmi: 0.7, embedding: "vector3", word: "investment" }
-  // ];
+
   const nEmbeddings: number = embeddingsData.length;
   console.log("nEmbeddings", nEmbeddings);
   console.log("nResult", nResult);
@@ -64,15 +59,7 @@ function Output({ result }: { result: DataProps }) {
   return (
     <div>
       {nResult > 0 && (
-        <div>
-          {processed_content && (
-            <div>
-              <h2 className="text-slate-100 mb-3 text-center">Processed Content</h2>
-              <div className="prose max-w-none text-slate-400 text-sm">
-                <ReactMarkdown>{processed_content}</ReactMarkdown>
-              </div>
-            </div>
-          )}          
+        <div>        
           <h2 className="text-slate-100 mb-3 text-center mt-6">Docs</h2>
           {/* Button to toggle embeddings container */}
           {nEmbeddings > 0 && (

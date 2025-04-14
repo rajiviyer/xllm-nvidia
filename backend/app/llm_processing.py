@@ -1,47 +1,25 @@
+import sys
 import os
-from langchain_openai import AzureChatOpenAI
-from langchain_core.messages import HumanMessage, SystemMessage
-from dotenv import load_dotenv
-from .chat_model import AzureContainerChatModel
-load_dotenv()
-print(f"Using Endpoint: {os.getenv('AZURE_INFERENCE_ENDPOINT')}")
 
-os.environ["AZURE_OPENAI_API_KEY"] = os.getenv("AZURE_INFERENCE_CREDENTIAL")
-os.environ["AZURE_OPENAI_ENDPOINT"] = os.getenv("AZURE_INFERENCE_ENDPOINT")
+# Add the backend directory to sys.path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+backend_dir = os.path.dirname(current_dir)
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
 
-# llm = AzureChatOpenAI(
-#     api_version="2023-03-15-preview",
-#     azure_deployment="gpt-4o-mini"
-# )
+from app.response_generator_model import ResponseGenerator
 
-llm = AzureContainerChatModel()
-
-def parse_docs(text, question) -> str:
-    print(f"Number of characters: {format(len(text))}")
-    messages = [
-        SystemMessage(content="""
-                        You are an AI assistant that answers questions based on the given text. 
-                        The answers are provided in Markdown format with a bullet point list wherever applicable.
-                        Keep the answers minimally verbose.
-                      """),
-        HumanMessage(content=f"Here is the text: {text}\n\nNow, answer this question: {question}"),
-    ]
-
-    result = llm.invoke(messages)
-    print("Result:", result.content)
-    return result.content
 
 def parse_docs_gemma(text, question) -> str:
-    print(f"Number of characters: {format(len(text))}")
-    messages = [
-        SystemMessage(content="""
-                        You are an AI assistant that answers questions based on the given text. 
-                        The answers are provided in Markdown format with a bullet point list & proper table structures 
-                        wherever applicable. Don't provide very long descriptions unless required by the question.
-                      """),
-        HumanMessage(content=f"Here is the text: {text}\n\nNow, answer this question: {question}"),
-    ]
+    pipeline = ResponseGenerator(info_cards=text, user_question=question)
+    response_generator = pipeline.chat()
+    response = "".join(response_generator)  # Consume the generator
+    print(f"Response: {response}")
+    return response
 
-    result = llm.invoke(messages)
-    print("Result:", result.content)
-    return result.content
+
+if __name__ == "__main__":
+    # Test the function with some sample data
+    sample_text = "This is a sample text for testing."
+    sample_question = "What is this text about?"
+    parse_docs_gemma(sample_text, sample_question)
